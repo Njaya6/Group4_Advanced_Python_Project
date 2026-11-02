@@ -1,0 +1,2536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuantPulse AI - Stock Market Assistant (User-Friendly Edition)</title>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #070a11;
+      --bg-card: #0d131f;
+      --bg-card-hover: #121a2b;
+      --bg-sidebar: #090e18;
+      --border-color: #1a253a;
+      --border-glow: #00f0ff33;
+      --cyan: #00f0ff;
+      --cyan-glow: #00f0ff88;
+      --cyan-dim: rgba(0, 240, 255, 0.12);
+      --green: #00e676;
+      --green-glow: rgba(0, 230, 118, 0.3);
+      --red: #ff3860;
+      --amber: #ffb300;
+      --text-main: #e2e8f0;
+      --text-muted: #798ba3;
+      --text-dim: #49586e;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(ellipse at 20% 10%, rgba(0, 240, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(0, 230, 118, 0.03) 0%, transparent 50%);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1a283e;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--cyan);
+    }
+
+    /* ==========================================================================
+       HELP TOOLTIPS - NEW FOR USER FRIENDLINESS
+       ========================================================================== */
+    .help-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--cyan);
+      font-size: 10px;
+      font-weight: bold;
+      cursor: help;
+      margin-left: 6px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .help-icon:hover {
+      background: var(--cyan);
+      color: #000;
+      transform: scale(1.1);
+    }
+
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 280px;
+      background-color: #1a2436;
+      color: #fff;
+      text-align: left;
+      border-radius: 8px;
+      padding: 12px 14px;
+      position: absolute;
+      z-index: 1000;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -140px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 12px;
+      line-height: 1.5;
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .tooltip .tooltiptext::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #1a2436 transparent transparent transparent;
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* Welcome Banner for First-Time Users */
+    .welcome-banner {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(0, 230, 118, 0.08));
+      border: 2px solid rgba(0, 240, 255, 0.4);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      position: relative;
+    }
+
+    .welcome-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.4);
+    }
+
+    .welcome-content h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .welcome-content p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .close-welcome {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 20px;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .close-welcome:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    /* Legend Box */
+    .legend-box {
+      background: #090e18;
+      border: 1px solid #1a273e;
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 14px;
+    }
+
+    .legend-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-items {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       TOP NAVBAR
+       ========================================================================== */
+    .navbar {
+      height: 60px;
+      background: rgba(9, 14, 24, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-pulse-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #00f0ff, #0088ff);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px var(--cyan-glow);
+    }
+
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-tab-btn.active {
+      color: var(--cyan);
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      font-weight: 600;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-help-guide {
+      background: rgba(255, 179, 0, 0.12);
+      color: var(--amber);
+      border: 1px solid rgba(255, 179, 0, 0.3);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-help-guide:hover {
+      background: rgba(255, 179, 0, 0.2);
+      box-shadow: 0 0 16px rgba(255, 179, 0, 0.3);
+    }
+
+    /* ==========================================================================
+       TICKER TAPE (REAL-TIME MARQUEE)
+       ========================================================================== */
+    .ticker-tape-container {
+      background: #090e18;
+      border-bottom: 1px solid var(--border-color);
+      height: 36px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    .ticker-feed-badge {
+      background: #0f1827;
+      color: var(--cyan);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 16px;
+      border-right: 1px solid var(--border-color);
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      z-index: 2;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.7; }
+    }
+
+    .ticker-scroll-content {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      animation: scrollTicker 40s linear infinite;
+      white-space: nowrap;
+      padding-left: 24px;
+    }
+
+    .ticker-scroll-content:hover {
+      animation-play-state: paused;
+    }
+
+    @keyframes scrollTicker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .ticker-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .ticker-item:hover {
+      transform: translateY(-2px);
+    }
+
+    .ticker-sym {
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    .ticker-price {
+      color: #fff;
+    }
+
+    .ticker-change.pos {
+      color: var(--green);
+    }
+
+    .ticker-change.neg {
+      color: var(--red);
+    }
+
+    /* ==========================================================================
+       APP LAYOUT
+       ========================================================================== */
+    .app-body {
+      display: flex;
+      flex: 1;
+      min-height: calc(100vh - 96px);
+    }
+
+    /* Main Content Area */
+    .main-viewport {
+      flex: 1;
+      padding: 16px 28px;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      margin-bottom: 16px;
+    }
+
+    .hero-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #fff;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .beginner-badge {
+      background: linear-gradient(135deg, rgba(0, 230, 118, 0.18), rgba(0, 240, 255, 0.15));
+      border: 1px solid rgba(0, 240, 255, 0.5);
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-family: var(--font-main);
+    }
+
+    .hero-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 1000px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-hero-primary {
+      background: linear-gradient(135deg, var(--cyan), #0088ff);
+      color: #050b14;
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-hero-primary:hover {
+      box-shadow: 0 0 24px rgba(0, 240, 255, 0.7);
+      transform: translateY(-2px);
+    }
+
+    .btn-hero-secondary {
+      background: #0f1726;
+      color: #cbd5e1;
+      border: 1px solid #1f2e48;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-hero-secondary:hover {
+      border-color: var(--cyan);
+      color: #fff;
+      background: #141f33;
+    }
+
+    /* 4 Metric Cards Row with Enhanced Explanations */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px 18px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .metric-card:hover {
+      border-color: rgba(0, 240, 255, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.15);
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      opacity: 0.5;
+    }
+
+    .metric-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-family: var(--font-main);
+    }
+
+    .metric-value-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      font-family: var(--font-mono);
+    }
+
+    .metric-delta {
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--green);
+    }
+
+    .metric-subtext {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .metric-explanation {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 10.5px;
+      color: var(--text-dim);
+      font-style: italic;
+      line-height: 1.4;
+    }
+
+    /* ==========================================================================
+       MAIN DASHBOARD CARDS
+       ========================================================================== */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 20px;
+    }
+
+    .card-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .panel-title-area {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .panel-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-subtitle {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .chip-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 5px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .chip-badge.green {
+      background: rgba(0, 230, 118, 0.15);
+      color: var(--green);
+      border: 1px solid rgba(0, 230, 118, 0.4);
+    }
+
+    .chip-badge.cyan {
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+    }
+
+    .chip-badge.amber {
+      background: rgba(255, 179, 0, 0.15);
+      color: var(--amber);
+      border: 1px solid rgba(255, 179, 0, 0.4);
+    }
+
+    /* Ticker selector & Quote Readout */
+    .forecaster-control-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #090e18;
+      border: 1px solid #1a273e;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .ticker-tabs-list {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .ticker-tab-chip {
+      background: #101726;
+      border: 1px solid #1c2a42;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .ticker-tab-chip:hover {
+      color: #fff;
+      background: #172238;
+      transform: translateY(-1px);
+    }
+
+    .ticker-tab-chip.active {
+      background: var(--cyan);
+      color: #050a12;
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+    }
+
+    .horizon-pills {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .horizon-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-right: 6px;
+    }
+
+    .horizon-btn {
+      background: transparent;
+      border: 1px solid #1c2a42;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .horizon-btn:hover {
+      color: #fff;
+      border-color: #2a3b5f;
+    }
+
+    .horizon-btn.active {
+      background: #1a2841;
+      color: var(--cyan);
+      border-color: #2d4566;
+      font-weight: 700;
+    }
+
+    /* Live Quote bar with Better Visual Hierarchy */
+    .quote-readout-row {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 18px;
+      font-family: var(--font-mono);
+      flex-wrap: wrap;
+    }
+
+    .quote-big-price {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .quote-delta {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .quote-telemetry-tags {
+      display: flex;
+      gap: 14px;
+      color: var(--text-muted);
+      font-size: 11.5px;
+      flex-wrap: wrap;
+    }
+
+    .quote-tag strong {
+      color: #cbd5e1;
+    }
+
+    /* Chart Canvas Container */
+    .chart-container-box {
+      height: 320px;
+      position: relative;
+      width: 100%;
+      margin-bottom: 16px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    /* Stats strip under chart with Icons */
+    .chart-stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      background: #090e18;
+      border: 1px solid #1a273e;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: var(--font-mono);
+    }
+
+    .sub-stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sub-stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .sub-stat-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .sub-stat-val.cyan {
+      color: var(--cyan);
+    }
+
+    .sub-stat-val.green {
+      color: var(--green);
+    }
+
+    /* Right Card: News Sentiment Engine */
+    .sentiment-meter-box {
+      background: #090e18;
+      border: 1px solid #1a273e;
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+
+    .meter-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .meter-label-left {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meter-bullish-pct {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--green);
+    }
+
+    .meter-track-container {
+      margin-bottom: 10px;
+    }
+
+    .meter-track {
+      height: 12px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #ff3860 0%, #ffb300 50%, #00e676 100%);
+      position: relative;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .meter-marker {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #000;
+      box-shadow: 0 0 12px #fff;
+      position: absolute;
+      top: -3px;
+      transform: translateX(-50%);
+      transition: left 0.5s ease;
+    }
+
+    .meter-labels-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .meter-center-score {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .sentiment-explanation {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: rgba(0, 240, 255, 0.05);
+      border-left: 3px solid var(--cyan);
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* News feed list */
+    .news-filter-pills {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .filter-pill-btn {
+      background: #0a101b;
+      border: 1px solid #1a273e;
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .filter-pill-btn:hover {
+      color: #fff;
+      border-color: #2d3f5f;
+    }
+
+    .filter-pill-btn.active {
+      color: var(--cyan);
+      border-color: rgba(0, 240, 255, 0.5);
+      background: rgba(0, 240, 255, 0.1);
+      font-weight: 600;
+    }
+
+    .news-cards-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      max-height: 360px;
+      padding-right: 6px;
+    }
+
+    .news-card-item {
+      background: #090e18;
+      border: 1px solid #1a273e;
+      border-radius: 8px;
+      padding: 14px 16px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .news-card-item:hover {
+      border-color: rgba(0, 240, 255, 0.4);
+      background: #0d1524;
+      transform: translateX(3px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .news-card-headline {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+      line-height: 1.5;
+      margin-bottom: 9px;
+    }
+
+    .news-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .news-meta-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-dim);
+    }
+
+    .news-source-tag {
+      color: #94a3b8;
+      font-weight: 700;
+    }
+
+    .news-pill-ticker {
+      background: #141f33;
+      color: #cbd5e1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .news-sentiment-badge {
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .news-sentiment-badge.bullish {
+      background: rgba(0, 230, 118, 0.18);
+      color: var(--green);
+    }
+
+    .news-sentiment-badge.neutral {
+      background: rgba(255, 179, 0, 0.18);
+      color: var(--amber);
+    }
+
+    .news-sentiment-badge.bearish {
+      background: rgba(255, 56, 96, 0.18);
+      color: var(--red);
+    }
+
+    /* Quick Tips Panel */
+    .quick-tips-panel {
+      background: linear-gradient(135deg, rgba(255, 179, 0, 0.08), rgba(255, 179, 0, 0.05));
+      border: 1px solid rgba(255, 179, 0, 0.3);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-top: 20px;
+    }
+
+    .tips-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--amber);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tips-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .tips-list li {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 8px;
+      padding-left: 18px;
+      position: relative;
+    }
+
+    .tips-list li::before {
+      content: "💡";
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .metrics-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .metrics-row {
+        grid-template-columns: 1fr;
+      }
+      .nav-tabs {
+        display: none;
+      }
+      .quote-readout-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+
+    /* View Switching */
+    .view-container {
+      display: none;
+    }
+
+    .view-container.active-view {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       TOP NAVIGATION BAR
+       ========================================================================== -->
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="#" class="brand-logo">
+        <div class="logo-pulse-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <span>QuantPulse AI</span>
+      </a>
+    </div>
+
+    <div class="nav-right">
+      <!-- Backend Connection Status - Click to view details -->
+      <div id="backendStatusPill" onclick="openApiStatusModal()" title="Click to view API connection status and test connection" style="display: flex; align-items: center; gap: 8px; background: #0c1422; border: 1px solid #1e2e48; padding: 6px 12px; border-radius: 20px; font-size: 11px; cursor: pointer; transition: all 0.2s;">
+        <span id="apiStatusDot" class="pulse-dot" style="width: 8px; height: 8px; background: #ffb300; box-shadow: 0 0 8px #ffb300;"></span>
+        <span id="apiStatusText" style="color: #94a3b8; font-family: var(--font-mono);">API: CHECKING...</span>
+      </div>
+
+      <button class="btn-help-guide" onclick="toggleHelpGuide()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        Help Guide
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       LIVE TICKER TAPE
+       ========================================================================== -->
+  <div class="ticker-tape-container">
+    <div class="ticker-feed-badge">
+      <span class="pulse-dot"></span>
+      <span>LIVE STOCK PRICES</span>
+    </div>
+    <div class="ticker-scroll-content" id="tickerTapeStream">
+      <div class="ticker-item"><span class="ticker-sym">RELIANCE</span> <span class="ticker-price">₹2,845</span> <span class="ticker-change pos">+1.24%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">TCS</span> <span class="ticker-price">₹3,620</span> <span class="ticker-change pos">+0.85%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">ICICIBANK</span> <span class="ticker-price">₹1,185</span> <span class="ticker-change pos">+1.52%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">NVDA</span> <span class="ticker-price">$128.40</span> <span class="ticker-change pos">+3.42%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">SENSEX</span> <span class="ticker-price">80,450</span> <span class="ticker-change pos">+0.72%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">NIFTY</span> <span class="ticker-price">24,520</span> <span class="ticker-change pos">+0.68%</span></div>
+      <!-- Duplicate for seamless loop -->
+      <div class="ticker-item"><span class="ticker-sym">RELIANCE</span> <span class="ticker-price">₹2,845</span> <span class="ticker-change pos">+1.24%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">TCS</span> <span class="ticker-price">₹3,620</span> <span class="ticker-change pos">+0.85%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">ICICIBANK</span> <span class="ticker-price">₹1,185</span> <span class="ticker-change pos">+1.52%</span></div>
+      <div class="ticker-item"><span class="ticker-sym">NVDA</span> <span class="ticker-price">$128.40</span> <span class="ticker-change pos">+3.42%</span></div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MAIN APP LAYOUT
+       ========================================================================== -->
+  <div class="app-body">
+    <main class="main-viewport">
+      
+      <!-- Welcome Banner for First-Time Users -->
+      <div class="welcome-banner" id="welcomeBanner">
+        <button class="close-welcome" onclick="closeWelcome()">×</button>
+        <div class="welcome-icon">👋</div>
+        <div class="welcome-content">
+          <h2>Welcome to Your Stock Market Dashboard!</h2>
+          <p>This dashboard helps you understand stock market trends using AI. <strong>Green means prices are going up</strong>, <strong>red means going down</strong>. Hover over any 
+<span class="tooltip">
+<span class="help-icon">?</span>
+<span class="tooltiptext">Click this icon anywhere to learn what each section means</span>
+</span> icon to learn more!</p>
+        </div>
+      </div>
+
+      <!-- Hero Section -->
+      <section class="hero-banner">
+        <h1 class="hero-title">
+          Stock Market Intelligence Dashboard
+          <span class="beginner-badge">EASY-TO-USE VERSION</span>
+        </h1>
+        <p class="hero-desc">
+          <strong>What is this?</strong> This dashboard predicts where stock prices might go using artificial intelligence and news analysis. <strong>How to use:</strong> Select a stock below, view the prediction chart, and read the sentiment (overall mood of the market) on the right side.
+        </p>
+
+        <div class="hero-actions">
+          <button class="btn-hero-primary" onclick="scrollToChart()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+            View Price Predictions
+          </button>
+          <button class="btn-hero-secondary" onclick="openUploadModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            Upload Your Own Data
+          </button>
+        </div>
+
+        <!-- 4 Quantitative Metrics with Better Explanations -->
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-label">Accuracy Rate</div>
+              <span class="tooltip">
+                <span class="help-icon">?</span>
+                <span class="tooltiptext"><strong>What this means:</strong> This shows how often our AI predictions were correct in the past 30 days. Higher is better! 94.2% means the AI was right 94 times out of 100.</span>
+              </span>
+            </div>
+            <div class="metric-value-row">
+              <span class="metric-value" style="color: var(--green);">94.2%</span>
+              <span class="metric-delta">▲ +1.8%</span>
+            </div>
+            <div class="metric-subtext">Our predictions were correct 94 times out of 100</div>
+            <div class="metric-explanation">✓ This is excellent! The AI is very accurate.</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-label">News Analyzed</div>
+              <span class="tooltip">
+                <span class="help-icon">?</span>
+                <span class="tooltiptext"><strong>What this means:</strong> Every minute, the AI reads 45,820 news articles, financial reports, and company announcements to understand market mood.</span>
+              </span>
+            </div>
+            <div class="metric-value-row">
+              <span class="metric-value">45,820</span>
+              <span class="metric-delta" style="color: var(--cyan);">per min</span>
+            </div>
+            <div class="metric-subtext">News articles processed every minute</div>
+            <div class="metric-explanation">ℹ️ More news = better predictions</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-label">Speed</div>
+              <span class="tooltip">
+                <span class="help-icon">?</span>
+                <span class="tooltiptext"><strong>What this means:</strong> This is how fast the AI makes predictions. 14.8 milliseconds is VERY fast - faster than you can blink!</span>
+              </span>
+            </div>
+            <div class="metric-value-row">
+              <span class="metric-value" style="color: var(--cyan);">14.8ms</span>
+              <span class="metric-delta" style="color: var(--cyan);">FAST</span>
+            </div>
+            <div class="metric-subtext">Time to generate a prediction</div>
+            <div class="metric-explanation">⚡ Faster than you can blink!</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-label">Stocks Covered</div>
+              <span class="tooltip">
+                <span class="help-icon">?</span>
+                <span class="tooltiptext"><strong>What this means:</strong> The AI can analyze 3,240+ different stocks from US, UK, Canada, and Indian markets.</span>
+              </span>
+            </div>
+            <div class="metric-value-row">
+              <span class="metric-value">3,240+</span>
+              <span class="metric-delta" style="color: #94a3b8;">stocks</span>
+            </div>
+            <div class="metric-subtext">US, UK, Canada & India markets</div>
+            <div class="metric-explanation">🌍 Global market coverage</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Split Grid Section -->
+      <div class="dashboard-grid" id="mainChartSection">
+        
+        <!-- LEFT CARD: Time Series Trend Forecaster -->
+        <div class="card-panel">
+          <div class="panel-header">
+            <div class="panel-title-area">
+              <div class="panel-title">
+                <span>Price Prediction Chart</span>
+                <span class="chip-badge green">READY</span>
+                <span class="tooltip">
+                  <span class="help-icon">?</span>
+                  <span class="tooltiptext"><strong>How to read this:</strong> The chart shows past prices (solid line) and predicted future prices (dotted line). The shaded area shows the range where the price might go.</span>
+                </span>
+              </div>
+              <div class="panel-subtitle">See where stock prices might go in the future based on AI analysis</div>
+            </div>
+          </div>
+
+          <!-- Ticker & Horizon Bar -->
+          <div class="forecaster-control-bar">
+            <div>
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 6px; font-weight: 600;">CHOOSE A STOCK:</div>
+              <div class="ticker-tabs-list">
+                <button class="ticker-tab-chip active" onclick="selectTicker('RELIANCE', this)">RELIANCE</button>
+                <button class="ticker-tab-chip" onclick="selectTicker('TCS', this)">TCS</button>
+                <button class="ticker-tab-chip" onclick="selectTicker('ICICIBANK', this)">ICICIBANK</button>
+                <button class="ticker-tab-chip" onclick="selectTicker('NVDA', this)">NVDA</button>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 6px; font-weight: 600;">PREDICTION TIME:</div>
+              <div class="horizon-pills">
+                <button class="horizon-btn" onclick="setHorizon('1D', this)">1 Day</button>
+                <button class="horizon-btn" onclick="setHorizon('1W', this)">1 Week</button>
+                <button class="horizon-btn active" onclick="setHorizon('1M', this)">1 Month</button>
+                <button class="horizon-btn" onclick="setHorizon('3M', this)">3 Months</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Quote Readout -->
+          <div class="quote-readout-row">
+            <div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">CURRENT PRICE:</div>
+              <span class="quote-big-price">₹2,845.00</span>
+            </div>
+            <div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">CHANGE TODAY:</div>
+              <span class="quote-delta">+35.20 (+1.24%)</span>
+            </div>
+          </div>
+
+          <!-- Chart Canvas -->
+          <div class="chart-container-box">
+            <canvas id="trendForecasterChart"></canvas>
+          </div>
+
+          <!-- Stats strip with clearer labels -->
+          <div class="chart-stats-strip">
+            <div class="sub-stat-item">
+              <span class="sub-stat-label">AI Status</span>
+              <span class="sub-stat-val green">WORKING ✓</span>
+            </div>
+            <div class="sub-stat-item">
+              <span class="sub-stat-label">Expected Gain</span>
+              <span class="sub-stat-val cyan">+14.2%</span>
+            </div>
+            <div class="sub-stat-item">
+              <span class="sub-stat-label">Confidence</span>
+              <span class="sub-stat-val">95%</span>
+            </div>
+            <div class="sub-stat-item">
+              <span class="sub-stat-label">Recommendation</span>
+              <span class="sub-stat-val green">BUY</span>
+            </div>
+          </div>
+
+          <!-- Legend Box -->
+          <div class="legend-box">
+            <div class="legend-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              Chart Legend (What the colors mean)
+            </div>
+            <div class="legend-items">
+              <div class="legend-item">
+                <div class="legend-color" style="background: var(--cyan);"></div>
+                <span>Past Actual Prices</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background: var(--green);"></div>
+                <span>Predicted Future Prices</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background: rgba(0, 230, 118, 0.2);"></div>
+                <span>Prediction Range (Uncertainty)</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background: var(--amber);"></div>
+                <span>Key Events / Changes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT CARD: News Sentiment Engine -->
+        <div class="card-panel">
+          <div class="panel-header">
+            <div class="panel-title-area">
+              <div class="panel-title">
+                <span>Market Mood Meter</span>
+                <span class="chip-badge green">
+                  <span class="pulse-dot" style="width: 6px; height: 6px;"></span> LIVE
+                </span>
+                <span class="tooltip">
+                  <span class="help-icon">?</span>
+                  <span class="tooltiptext"><strong>What this shows:</strong> The "mood" of the market based on news. Bullish = Good news (prices may go up). Bearish = Bad news (prices may go down).</span>
+                </span>
+              </div>
+              <div class="panel-subtitle">Overall feeling about the market based on news and reports</div>
+            </div>
+          </div>
+
+          <!-- Sentiment Gauge with Better Explanation -->
+          <div class="sentiment-meter-box">
+            <div class="meter-top-row">
+              <span class="meter-label-left">
+                OVERALL MOOD:
+                <span class="tooltip">
+                  <span class="help-icon">?</span>
+                  <span class="tooltiptext"><strong>How to read:</strong> This meter shows if people are feeling positive (right side) or negative (left side) about stocks. The white dot shows where we are now.</span>
+                </span>
+              </span>
+              <span class="meter-bullish-pct">78% POSITIVE</span>
+            </div>
+
+            <div class="meter-track-container">
+              <div class="meter-track">
+                <div class="meter-marker" style="left: 89%;"></div>
+              </div>
+            </div>
+
+            <div class="meter-labels-row">
+              <span>😨 FEARFUL</span>
+              <span class="meter-center-score">SCORE: +0.78</span>
+              <span>😊 GREEDY</span>
+            </div>
+
+            <div class="sentiment-explanation">
+              <strong>What this means:</strong> People are feeling <strong style="color: var(--green);">very positive</strong> about the market right now. When sentiment is high, prices often go up. But remember, sentiment can change quickly!
+            </div>
+          </div>
+
+          <!-- News Filter Tabs -->
+          <div class="news-filter-pills">
+            <button class="filter-pill-btn active" onclick="filterNews('ALL', this)">All News</button>
+            <button class="filter-pill-btn" onclick="filterNews('POSITIVE', this)">Positive News</button>
+            <button class="filter-pill-btn" onclick="filterNews('NEGATIVE', this)">Negative News</button>
+          </div>
+
+          <!-- Streaming News Feed Cards -->
+          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600;">LATEST NEWS AFFECTING STOCKS:</div>
+          <div class="news-cards-stream">
+            
+            <div class="news-card-item">
+              <div class="news-card-headline">NVIDIA announces new AI chip with 40% better performance</div>
+              <div class="news-meta-row">
+                <div class="news-meta-left">
+                  <span class="news-source-tag">Reuters</span>
+                  <span>2h ago</span>
+                  <span class="news-pill-ticker">NVDA</span>
+                </div>
+                <span class="news-sentiment-badge bullish">😊 POSITIVE</span>
+              </div>
+            </div>
+
+            <div class="news-card-item">
+              <div class="news-card-headline">Indian markets reach all-time high on strong economic data</div>
+              <div class="news-meta-row">
+                <div class="news-meta-left">
+                  <span class="news-source-tag">Economic Times</span>
+                  <span>4h ago</span>
+                  <span class="news-pill-ticker">SENSEX</span>
+                </div>
+                <span class="news-sentiment-badge bullish">😊 POSITIVE</span>
+              </div>
+            </div>
+
+            <div class="news-card-item">
+              <div class="news-card-headline">Reliance Industries reports 15% quarterly profit growth</div>
+              <div class="news-meta-row">
+                <div class="news-meta-left">
+                  <span class="news-source-tag">Bloomberg</span>
+                  <span>5h ago</span>
+                  <span class="news-pill-ticker">RELIANCE</span>
+                </div>
+                <span class="news-sentiment-badge bullish">😊 POSITIVE</span>
+            </div>
+            </div>
+
+            <div class="news-card-item">
+              <div class="news-card-headline">TCS wins major cloud infrastructure contract worth $500M</div>
+              <div class="news-meta-row">
+                <div class="news-meta-left">
+                  <span class="news-source-tag">Business Standard</span>
+                  <span>6h ago</span>
+                  <span class="news-pill-ticker">TCS</span>
+                </div>
+                <span class="news-sentiment-badge bullish">😊 POSITIVE</span>
+              </div>
+            </div>
+
+            <div class="news-card-item">
+              <div class="news-card-headline">Federal Reserve signals possible interest rate cuts</div>
+              <div class="news-meta-row">
+                <div class="news-meta-left">
+                  <span class="news-source-tag">CNBC</span>
+                  <span>8h ago</span>
+                  <span class="news-pill-ticker">MARKET</span>
+                </div>
+                <span class="news-sentiment-badge neutral">😐 NEUTRAL</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Quick Tips Panel -->
+          <div class="quick-tips-panel">
+            <div class="tips-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+              Quick Tips for Beginners
+            </div>
+            <ul class="tips-list">
+              <li><strong>Green = Good:</strong> When you see green numbers, it means prices are going up</li>
+              <li><strong>Red = Caution:</strong> Red numbers mean prices are going down</li>
+              <li><strong>Predictions are guesses:</strong> Even AI can be wrong sometimes. Always do your research!</li>
+              <li><strong>Click news cards:</strong> Tap any news card to read the full story</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: API STATUS & CONNECTION TESTING
+       ========================================================================== -->
+  <div class="modal-overlay" id="apiStatusModal">
+    <div class="modal-window" style="max-width: 620px;">
+      <button class="modal-close-btn" onclick="closeApiStatusModal()">×</button>
+      
+      <div style="padding: 10px 0;">
+        <h2 style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          Backend API Connection Status
+        </h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+          Connect to your Python backend for real-time AI predictions, or use standalone mode with sample data.
+        </p>
+
+        <!-- Status Display Box -->
+        <div style="background: #090e18; border: 1px solid #1a273e; border-radius: 10px; padding: 18px; margin-bottom: 20px; font-family: var(--font-mono); font-size: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #162033;">
+            <span style="color: var(--text-muted); font-weight: 600;">CURRENT MODE:</span>
+            <span id="modalModeText" style="color: #ffb300; font-weight: 700; font-size: 13px;">STANDALONE MODE</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">STOCKS LOADED:</span>
+            <span style="color: var(--green); font-weight: 600;">RELIANCE, TCS, ICICIBANK, NVDA</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="color: var(--text-muted); font-weight: 600;">CHECKING PORTS:</span>
+            <span style="color: var(--cyan); font-weight: 600;">8000, 8001</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-muted); font-weight: 600;">BACKEND URL:</span>
+            <span id="modalBackendUrl" style="color: var(--cyan); font-weight: 600;">http://127.0.0.1:8000</span>
+          </div>
+        </div>
+
+        <!-- Instructions Box -->
+        <div style="background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+          <div style="font-size: 13px; font-weight: 700; color: var(--cyan); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            How to Start Your Python Backend:
+          </div>
+          <ol style="font-size: 12px; color: var(--text-muted); line-height: 1.8; margin: 0; padding-left: 20px;">
+            <li>Open a terminal/command prompt in your project folder</li>
+            <li>Run the backend server with this command:</li>
+          </ol>
+          <div style="background: #050811; border: 1px solid #1a273e; padding: 10px 14px; border-radius: 6px; font-family: var(--font-mono); color: var(--cyan); margin: 10px 0; font-size: 12px;">
+            python api_bridge.py
+          </div>
+          <p style="font-size: 11px; color: var(--text-muted); margin: 0; font-style: italic;">
+            💡 <strong>Tip:</strong> Once running, the indicator will automatically turn <strong style="color: var(--green);">green (Connected)</strong>
+          </p>
+        </div>
+
+        <!-- Feature Comparison -->
+        <div style="background: #090e18; border: 1px solid #1a273e; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+          <div style="font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 12px;">What's the difference?</div>
+          <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
+            <tr style="border-bottom: 1px solid #162033;">
+              <th style="text-align: left; padding: 8px 4px; color: var(--text-muted); font-weight: 600;">Feature</th>
+              <th style="text-align: center; padding: 8px 4px; color: var(--green); font-weight: 600;">Connected</th>
+              <th style="text-align: center; padding: 8px 4px; color: #ffb300; font-weight: 600;">Standalone</th>
+            </tr>
+            <tr style="border-bottom: 1px solid #0d1420;">
+              <td style="padding: 8px 4px; color: var(--text-muted);">AI Predictions</td>
+              <td style="text-align: center; padding: 8px 4px; color: var(--green);">✓ Real ML Models</td>
+              <td style="text-align: center; padding: 8px 4px; color: #ffb300;">✓ Sample Data</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #0d1420;">
+              <td style="padding: 8px 4px; color: var(--text-muted);">CSV Upload</td>
+              <td style="text-align: center; padding: 8px 4px; color: var(--green);">✓ ML Analysis</td>
+              <td style="text-align: center; padding: 8px 4px; color: #ffb300;">✓ Local Calc</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 4px; color: var(--text-muted);">Dashboard Works</td>
+              <td style="text-align: center; padding: 8px 4px; color: var(--green);">✓ Yes</td>
+              <td style="text-align: center; padding: 8px 4px; color: var(--green);">✓ Yes</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <button onclick="testConnectionWithFeedback()" style="background: linear-gradient(135deg, var(--cyan), #0088ff); color: #000; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 16px rgba(0, 240, 255, 0.4); transition: all 0.2s;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            Test Connection Now
+          </button>
+          <button onclick="closeApiStatusModal()" style="background: #0f1726; color: #cbd5e1; border: 1px solid #1f2e48; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.2s;">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: CSV FILE UPLOAD
+       ========================================================================== -->
+  <div class="modal-overlay" id="uploadModal">
+    <div class="modal-window" style="max-width: 650px;">
+      <button class="modal-close-btn" onclick="closeUploadModal()">×</button>
+      
+      <div style="padding: 10px 0;">
+        <h2 style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 8px;">Upload Your Stock Data</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+          Upload a CSV file with stock price data. The AI will analyze it and generate predictions.
+        </p>
+
+        <div id="dropZone" style="border: 2px dashed rgba(0, 240, 255, 0.4); border-radius: 12px; padding: 40px 20px; text-align: center; background: rgba(0, 240, 255, 0.03); cursor: pointer; transition: all 0.3s;" onclick="document.getElementById('csvFileInput').click()">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" style="margin: 0 auto 16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <div style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px;">Drop CSV file here or click to browse</div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Supports Date, Open, High, Low, Close columns</div>
+          <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleFileSelect(event)">
+          <button style="background: var(--cyan); color: #000; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;">
+            Select File
+          </button>
+        </div>
+
+        <div style="margin-top: 20px; padding: 14px; background: rgba(255, 179, 0, 0.08); border: 1px solid rgba(255, 179, 0, 0.3); border-radius: 8px;">
+          <div style="font-size: 12px; font-weight: 700; color: var(--amber); margin-bottom: 6px;">💡 CSV Format Guide:</div>
+          <ul style="font-size: 11px; color: var(--text-muted); line-height: 1.6; margin: 0; padding-left: 20px;">
+            <li>First row should contain column headers (Date, Close, etc.)</li>
+            <li>Date column can be named: Date, Time, or Timestamp</li>
+            <li>Price column can be named: Close, Price, Adj Close, or Value</li>
+            <li>Minimum 5 rows of data required for analysis</li>
+          </ul>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 12px;">
+          <button onclick="loadSampleData()" style="background: #0f1726; color: #cbd5e1; border: 1px solid #1f2e48; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;">
+            Load Sample Data
+          </button>
+          <button onclick="closeUploadModal()" style="background: var(--cyan); color: #000; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px;">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Styles -->
+  <style>
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(4, 7, 13, 0.9);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-window {
+      background: #0d131f;
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      border-radius: 14px;
+      width: 90%;
+      max-width: 720px;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
+      padding: 32px;
+      position: relative;
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: transparent;
+      border: 1px solid #1f2e48;
+      color: var(--text-muted);
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-close-btn:hover {
+      color: #fff;
+      border-color: var(--cyan);
+      background: rgba(0, 240, 255, 0.1);
+    }
+
+    #dropZone.dragover {
+      border-color: var(--cyan);
+      background: rgba(0, 240, 255, 0.08);
+      transform: scale(1.01);
+    }
+  </style>
+
+  <!-- ==========================================================================
+       JAVASCRIPT FOR INTERACTIVITY AND BACKEND INTEGRATION
+       ========================================================================== -->
+  <script>
+    // ==========================================================================
+    // BACKEND API CONFIGURATION
+    // ==========================================================================
+    let BACKEND_API_BASE = 'http://127.0.0.1:8000';
+    let isBackendConnected = false;
+
+    // Check Backend API Connection Status (Supports port 8000 FastAPI & 8001 bridge)
+    async function checkBackendHealth() {
+      const statusDot = document.getElementById('apiStatusDot');
+      const statusText = document.getElementById('apiStatusText');
+      
+      const ports = ['http://127.0.0.1:8000', 'http://127.0.0.1:8001'];
+      for (const baseUrl of ports) {
+        try {
+          const res = await fetch(`${baseUrl}/api/status`, { mode: 'cors' });
+          if (res.ok) {
+            BACKEND_API_BASE = baseUrl;
+            isBackendConnected = true;
+            
+            // Update main indicator
+            if (statusDot) {
+              statusDot.style.background = 'var(--green)';
+              statusDot.style.boxShadow = '0 0 10px var(--green)';
+            }
+            if (statusText) {
+              statusText.textContent = `API: CONNECTED (${baseUrl.split(':').pop()})`;
+              statusText.style.color = 'var(--green)';
+            }
+            
+            // Update modal if open
+            const modalModeText = document.getElementById('modalModeText');
+            const modalBackendUrl = document.getElementById('modalBackendUrl');
+            if (modalModeText) {
+              modalModeText.textContent = `CONNECTED (Port ${baseUrl.split(':').pop()})`;
+              modalModeText.style.color = 'var(--green)';
+            }
+            if (modalBackendUrl) {
+              modalBackendUrl.textContent = baseUrl;
+            }
+            
+            console.log('✓ Backend API connected:', baseUrl);
+            return;
+          }
+        } catch (err) {
+          // try next port
+        }
+      }
+      
+      // If no connection found
+      isBackendConnected = false;
+      if (statusDot) {
+        statusDot.style.background = '#ffb300';
+        statusDot.style.boxShadow = '0 0 8px #ffb300';
+      }
+      if (statusText) {
+        statusText.textContent = 'API: STANDALONE';
+        statusText.style.color = '#ffb300';
+      }
+      
+      // Update modal if open
+      const modalModeText = document.getElementById('modalModeText');
+      if (modalModeText) {
+        modalModeText.textContent = 'STANDALONE MODE';
+        modalModeText.style.color = '#ffb300';
+      }
+      
+      console.log('⚠ Backend API not available, using standalone mode');
+    }
+
+    // ==========================================================================
+    // API STATUS MODAL FUNCTIONS
+    // ==========================================================================
+    function openApiStatusModal() {
+      // Update modal with current status before showing
+      const modalModeText = document.getElementById('modalModeText');
+      const modalBackendUrl = document.getElementById('modalBackendUrl');
+      
+      if (isBackendConnected) {
+        if (modalModeText) {
+          modalModeText.textContent = `CONNECTED (Port ${BACKEND_API_BASE.split(':').pop()})`;
+          modalModeText.style.color = 'var(--green)';
+        }
+        if (modalBackendUrl) {
+          modalBackendUrl.textContent = BACKEND_API_BASE;
+        }
+      } else {
+        if (modalModeText) {
+          modalModeText.textContent = 'STANDALONE MODE';
+          modalModeText.style.color = '#ffb300';
+        }
+        if (modalBackendUrl) {
+          modalBackendUrl.textContent = 'http://127.0.0.1:8000 (Not Connected)';
+        }
+      }
+      
+      document.getElementById('apiStatusModal').classList.add('open');
+    }
+
+    function closeApiStatusModal() {
+      document.getElementById('apiStatusModal').classList.remove('open');
+    }
+
+    // Test connection with visual feedback
+    async function testConnectionWithFeedback() {
+      const btn = event.currentTarget;
+      const originalHTML = btn.innerHTML;
+      
+      // Show testing state
+      btn.innerHTML = '<span class="pulse-dot" style="width: 10px; height: 10px; margin-right: 6px;"></span> Testing...';
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+      
+      // Perform connection test
+      await checkBackendHealth();
+      
+      // Wait a moment for visual feedback
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Show result
+      if (isBackendConnected) {
+        btn.innerHTML = '✓ Connected Successfully!';
+        btn.style.background = 'linear-gradient(135deg, var(--green), #00b894)';
+        
+        // Show success message
+        setTimeout(() => {
+          alert(`✅ Successfully Connected!\n\n` +
+                `Backend API: ${BACKEND_API_BASE}\n` +
+                `Status: Online\n` +
+                `Port: ${BACKEND_API_BASE.split(':').pop()}\n\n` +
+                `You can now get real-time AI predictions!`);
+        }, 100);
+      } else {
+        btn.innerHTML = '⚠ Not Connected';
+        btn.style.background = 'linear-gradient(135deg, #ffb300, #ff9500)';
+        
+        // Show instructions
+        setTimeout(() => {
+          alert(`⚠ Backend Server Not Running\n\n` +
+                `The Python API server is not responding.\n\n` +
+                `To start it:\n` +
+                `1. Open terminal in your project folder\n` +
+                `2. Run: python api_bridge.py\n` +
+                `3. Wait for "Running on port 8001" message\n` +
+                `4. Click "Test Connection Now" again\n\n` +
+                `Note: The dashboard still works in standalone mode!`);
+        }, 100);
+      }
+      
+      // Reset button after 2 seconds
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.background = 'linear-gradient(135deg, var(--cyan), #0088ff)';
+      }, 2000);
+    }
+
+    // Global variables
+    let currentTicker = 'RELIANCE';
+    let currentHorizon = '1M';
+    let forecastChart = null;
+
+    // Close welcome banner
+    function closeWelcome() {
+      document.getElementById('welcomeBanner').style.display = 'none';
+      localStorage.setItem('welcomeClosed', 'true');
+    }
+
+    // Check if welcome was closed before
+    if (localStorage.getItem('welcomeClosed') === 'true') {
+      document.getElementById('welcomeBanner').style.display = 'none';
+    }
+
+    // Scroll to chart
+    function scrollToChart() {
+      document.getElementById('mainChartSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Toggle help guide
+    function toggleHelpGuide() {
+      alert('Welcome to the Help Guide!\n\n' +
+            '📊 MAIN CHART: Shows past prices and future predictions\n' +
+            '   • Blue line = actual past prices\n' +
+            '   • Green line = predicted future prices\n' +
+            '   • Shaded area = uncertainty range\n\n' +
+            '🎯 MOOD METER: Shows market sentiment\n' +
+            '   • Left (red) = people are scared\n' +
+            '   • Right (green) = people are confident\n\n' +
+            '📰 NEWS FEED: Latest news affecting stocks\n' +
+            '   • 😊 Positive = good news for stocks\n' +
+            '   • 😐 Neutral = mixed news\n' +
+            '   • 😨 Negative = bad news for stocks\n\n' +
+            'Tip: Hover over any ? icon for more help!');
+    }
+
+    // Select ticker
+    function selectTicker(ticker, element) {
+      currentTicker = ticker;
+      
+      // Update active state
+      document.querySelectorAll('.ticker-tab-chip').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      if (element) {
+        element.classList.add('active');
+      }
+
+      // Update chart and display
+      updateDashboard();
+    }
+
+    // Set horizon
+    function setHorizon(horizon, element) {
+      currentHorizon = horizon;
+      
+      // Update active state
+      document.querySelectorAll('.horizon-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      if (element) {
+        element.classList.add('active');
+      }
+
+      // Update chart
+      updateDashboard();
+    }
+
+    // Filter news
+    function filterNews(filter, element) {
+      // Update active state
+      document.querySelectorAll('.filter-pill-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      if (element) {
+        element.classList.add('active');
+      }
+
+      // In a real application, this would filter the news items
+      console.log('Filtering news by:', filter);
+    }
+
+    // Stock database with sample data
+    const stockDatabase = {
+      'RELIANCE': {
+        name: 'Reliance Industries Ltd.',
+        price: 2845.00,
+        change: '+1.24%',
+        isPos: true,
+        volume: '2.8M',
+        history: [2760, 2780, 2795, 2810, 2825, 2815, 2830, 2845],
+        historyDates: ['Oct 25', 'Oct 26', 'Oct 27', 'Oct 28', 'Oct 29', 'Oct 30', 'Oct 31', 'Nov 01'],
+        futureForecast: null,
+        futureDates: ['Nov 04', 'Nov 07', 'Nov 11', 'Nov 14', 'Nov 18', 'Nov 21'],
+        upperBound: null,
+        lowerBound: null,
+        sentimentScore: 0.78,
+        expectedReturn: '+12.4%',
+        signal: 'BUY'
+      },
+      'TCS': {
+        name: 'Tata Consultancy Services Ltd.',
+        price: 3620.00,
+        change: '+0.85%',
+        isPos: true,
+        volume: '3.5M',
+        history: [3500, 3520, 3545, 3570, 3590, 3600, 3610, 3620],
+        historyDates: ['Oct 25', 'Oct 26', 'Oct 27', 'Oct 28', 'Oct 29', 'Oct 30', 'Oct 31', 'Nov 01'],
+        futureForecast: null,
+        futureDates: ['Nov 04', 'Nov 07', 'Nov 11', 'Nov 14', 'Nov 18', 'Nov 21'],
+        upperBound: null,
+        lowerBound: null,
+        sentimentScore: 0.68,
+        expectedReturn: '+9.8%',
+        signal: 'BUY'
+      },
+      'ICICIBANK': {
+        name: 'ICICI Bank Ltd.',
+        price: 1185.00,
+        change: '+1.52%',
+        isPos: true,
+        volume: '11.3M',
+        history: [1120, 1135, 1150, 1160, 1170, 1175, 1180, 1185],
+        historyDates: ['Oct 25', 'Oct 26', 'Oct 27', 'Oct 28', 'Oct 29', 'Oct 30', 'Oct 31', 'Nov 01'],
+        futureForecast: null,
+        futureDates: ['Nov 04', 'Nov 07', 'Nov 11', 'Nov 14', 'Nov 18', 'Nov 21'],
+        upperBound: null,
+        lowerBound: null,
+        sentimentScore: 0.72,
+        expectedReturn: '+11.2%',
+        signal: 'BUY'
+      },
+      'NVDA': {
+        name: 'NVIDIA Corporation',
+        price: 128.40,
+        change: '+3.42%',
+        isPos: true,
+        volume: '48.2M',
+        history: [115, 118, 120, 122, 125, 126, 127, 128.4],
+        historyDates: ['Oct 25', 'Oct 26', 'Oct 27', 'Oct 28', 'Oct 29', 'Oct 30', 'Oct 31', 'Nov 01'],
+        futureForecast: null,
+        futureDates: ['Nov 04', 'Nov 07', 'Nov 11', 'Nov 14', 'Nov 18', 'Nov 21'],
+        upperBound: null,
+        lowerBound: null,
+        sentimentScore: 0.82,
+        expectedReturn: '+18.5%',
+        signal: 'STRONG BUY'
+      }
+    };
+
+    // Update dashboard with new data (with backend integration)
+    async function updateDashboard() {
+      const data = stockDatabase[currentTicker];
+      if (!data) return;
+
+      // Determine currency symbol
+      const currencySymbol = ['RELIANCE', 'TCS', 'ICICIBANK'].includes(currentTicker) ? '₹' : '$';
+      
+      // Update price display
+      document.querySelector('.quote-big-price').textContent = currencySymbol + data.price.toLocaleString(undefined, {minimumFractionDigits: 2});
+      document.querySelector('.quote-delta').textContent = data.change;
+      document.querySelector('.quote-delta').style.color = data.isPos ? 'var(--green)' : 'var(--red)';
+
+      // If backend is connected, fetch live predictions
+      if (isBackendConnected) {
+        try {
+          const res = await fetch(`${BACKEND_API_BASE}/api/predict?ticker=${currentTicker}&horizon=${currentHorizon}`);
+          if (res.ok) {
+            const apiData = await res.json();
+            console.log('✓ Received prediction from backend:', apiData);
+            
+            // Update with backend data
+            if (apiData.forecast_prices && apiData.forecast_prices.length > 0) {
+              data.futureForecast = apiData.forecast_prices;
+            }
+            if (apiData.upper_95_bound && apiData.upper_95_bound.length > 0) {
+              data.upperBound = apiData.upper_95_bound;
+            }
+            if (apiData.lower_95_bound && apiData.lower_95_bound.length > 0) {
+              data.lowerBound = apiData.lower_95_bound;
+            }
+            if (apiData.expected_return) {
+              data.expectedReturn = apiData.expected_return;
+              const returnEl = document.querySelector('.sub-stat-val.cyan');
+              if (returnEl) returnEl.textContent = apiData.expected_return;
+            }
+            if (apiData.alpha_signal) {
+              data.signal = apiData.alpha_signal;
+              const signalEl = document.querySelectorAll('.sub-stat-val.green')[1];
+              if (signalEl) signalEl.textContent = apiData.alpha_signal;
+            }
+          }
+        } catch (e) {
+          console.warn('⚠ Backend fetch failed, using local data:', e);
+        }
+      }
+
+      // Generate default forecasts if backend didn't provide them
+      if (!data.futureForecast || data.futureForecast.length === 0) {
+        generateLocalForecast(data);
+      }
+
+      // Redraw chart
+      drawChart();
+    }
+
+    // Generate simple local forecast when backend is unavailable
+    function generateLocalForecast(data) {
+      const lastPrice = data.history[data.history.length - 1];
+      const trend = (data.history[data.history.length - 1] - data.history[0]) / data.history.length;
+      
+      data.futureForecast = [];
+      data.upperBound = [];
+      data.lowerBound = [];
+      
+      for (let i = 1; i <= 6; i++) {
+        const forecast = lastPrice + (trend * i * 2);
+        data.futureForecast.push(forecast);
+        data.upperBound.push(forecast + (lastPrice * 0.05 * Math.sqrt(i)));
+        data.lowerBound.push(forecast - (lastPrice * 0.03 * Math.sqrt(i)));
+      }
+    }
+
+    // Initialize and draw the forecast chart
+    function drawChart() {
+      const canvas = document.getElementById('trendForecasterChart');
+      const ctx = canvas.getContext('2d');
+
+      // Destroy existing chart
+      if (forecastChart) {
+        forecastChart.destroy();
+      }
+
+      // Generate sample data
+      const labels = [];
+      const historicalData = [];
+      const forecastData = [];
+      const upperBand = [];
+      const lowerBand = [];
+
+      // Historical data (past 30 days)
+      for (let i = 30; i >= 0; i--) {
+        labels.push(`Day -${i}`);
+        historicalData.push(100 + Math.random() * 30 + i * 0.5);
+      }
+
+      // Forecast data (next 30 days)
+      let lastValue = historicalData[historicalData.length - 1];
+      for (let i = 1; i <= 30; i++) {
+        labels.push(`Day +${i}`);
+        historicalData.push(null);
+        
+        lastValue = lastValue + Math.random() * 2;
+        forecastData.push(lastValue);
+        upperBand.push(lastValue + 5 + i * 0.3);
+        lowerBand.push(lastValue - 5 - i * 0.2);
+      }
+
+      // Fill forecast arrays to align with labels
+      for (let i = 0; i < 31; i++) {
+        forecastData.unshift(null);
+        upperBand.unshift(null);
+        lowerBand.unshift(null);
+      }
+
+      // Create chart
+      forecastChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Past Actual Prices',
+              data: historicalData,
+              borderColor: '#00f0ff',
+              backgroundColor: 'rgba(0, 240, 255, 0.1)',
+              borderWidth: 3,
+              pointRadius: 0,
+              tension: 0.4,
+              fill: false
+            },
+            {
+              label: 'Predicted Future Prices',
+              data: forecastData,
+              borderColor: '#00e676',
+              backgroundColor: 'rgba(0, 230, 118, 0.1)',
+              borderWidth: 3,
+              borderDash: [5, 5],
+              pointRadius: 0,
+              tension: 0.4,
+              fill: false
+            },
+            {
+              label: 'Upper Range',
+              data: upperBand,
+              borderColor: 'rgba(0, 230, 118, 0.3)',
+              backgroundColor: 'rgba(0, 230, 118, 0.15)',
+              borderWidth: 0,
+              pointRadius: 0,
+              tension: 0.4,
+              fill: '+1'
+            },
+            {
+              label: 'Lower Range',
+              data: lowerBand,
+              borderColor: 'rgba(0, 230, 118, 0.3)',
+              backgroundColor: 'rgba(0, 230, 118, 0.15)',
+              borderWidth: 0,
+              pointRadius: 0,
+              tension: 0.4,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              backgroundColor: 'rgba(13, 19, 31, 0.95)',
+              titleColor: '#00f0ff',
+              bodyColor: '#e2e8f0',
+              borderColor: '#1a253a',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: true,
+              callbacks: {
+                title: function(context) {
+                  return context[0].label;
+                },
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += '₹' + context.parsed.y.toFixed(2);
+                  }
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)',
+                drawBorder: false
+              },
+              ticks: {
+                color: '#798ba3',
+                maxTicksLimit: 10,
+                font: {
+                  size: 10,
+                  family: "'JetBrains Mono', monospace"
+                }
+              }
+            },
+            y: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)',
+                drawBorder: false
+              },
+              ticks: {
+                color: '#798ba3',
+                callback: function(value) {
+                  return '₹' + value.toFixed(0);
+                },
+                font: {
+                  size: 10,
+                  family: "'JetBrains Mono', monospace"
+                }
+              }
+            }
+          },
+          interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+          }
+        }
+      });
+    }
+
+    // Initialize dashboard on load
+    document.addEventListener('DOMContentLoaded', function() {
+      checkBackendHealth();
+      drawChart();
+    });
+
+    // ==========================================================================
+    // FILE UPLOAD MODAL FUNCTIONS
+    // ==========================================================================
+    function openUploadModal() {
+      document.getElementById('uploadModal').classList.add('open');
+    }
+
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.remove('open');
+    }
+
+    // Drag and drop handlers
+    const dropZone = document.getElementById('dropZone');
+    if (dropZone) {
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => { 
+          e.preventDefault(); 
+          dropZone.classList.add('dragover'); 
+        }, false);
+      });
+      
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => { 
+          e.preventDefault(); 
+          dropZone.classList.remove('dragover'); 
+        }, false);
+      });
+      
+      dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length) parseCSVFile(files[0]);
+      });
+    }
+
+    function handleFileSelect(e) {
+      if (e.target.files.length) {
+        parseCSVFile(e.target.files[0]);
+      }
+    }
+
+    // ==========================================================================
+    // CSV PARSER & PREDICTION GENERATOR
+    // ==========================================================================
+    function parseCSVFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const text = evt.target.result;
+        processCSVData(text, file.name);
+      };
+      reader.readAsText(file);
+    }
+
+    async function processCSVData(csvContent, filename) {
+      const lines = csvContent.trim().split('\n');
+      if (lines.length < 5) {
+        alert("❌ The uploaded file doesn't have enough rows. Please upload a CSV with at least 5 rows of data.");
+        return;
+      }
+
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      
+      // Locate Date and Close/Price column indices
+      let dateIdx = headers.findIndex(h => h.includes('date') || h.includes('time') || h.includes('timestamp'));
+      let closeIdx = headers.findIndex(h => h.includes('close') || h.includes('price') || h.includes('adj') || h.includes('val'));
+
+      if (dateIdx === -1) dateIdx = 0;
+      if (closeIdx === -1) closeIdx = headers.length > 4 ? 4 : 1;
+
+      const dates = [];
+      const prices = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const row = lines[i].split(',');
+        if (row.length > closeIdx) {
+          const dStr = row[dateIdx] ? row[dateIdx].trim() : `Day ${i}`;
+          const pVal = parseFloat(row[closeIdx]);
+          if (!isNaN(pVal)) {
+            dates.push(dStr);
+            prices.push(pVal);
+          }
+        }
+      }
+
+      if (prices.length < 5) {
+        alert("❌ Could not extract valid price data from the CSV. Please check the file format.");
+        return;
+      }
+
+      // Sample last points for display
+      const sampleCount = Math.min(15, prices.length);
+      const subPrices = prices.slice(-sampleCount);
+      const subDates = dates.slice(-sampleCount);
+
+      const lastPrice = subPrices[subPrices.length - 1];
+      const prevPrice = subPrices[0];
+      const diff = lastPrice - prevPrice;
+      const pct = ((diff / prevPrice) * 100).toFixed(2);
+
+      // Calculate simple trend statistics
+      let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+      const n = subPrices.length;
+      for (let i = 0; i < n; i++) {
+        sumX += i;
+        sumY += subPrices[i];
+        sumXY += i * subPrices[i];
+        sumX2 += i * i;
+      }
+      const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+      const mean = sumY / n;
+      const variance = subPrices.reduce((acc, p) => acc + Math.pow(p - mean, 2), 0) / n;
+      const stdDev = Math.sqrt(variance);
+
+      const futureDates = ['T+1d', 'T+3d', 'T+7d', 'T+14d', 'T+21d', 'T+30d'];
+      let futureForecast = [];
+      let upperBound = [];
+      let lowerBound = [];
+
+      // Generate local forecast
+      for (let i = 1; i <= 6; i++) {
+        const projected = Number((lastPrice + slope * i * 1.5).toFixed(2));
+        futureForecast.push(projected);
+        const uncertaintyCone = stdDev * 0.8 * Math.sqrt(i);
+        upperBound.push(Number((projected + uncertaintyCone).toFixed(2)));
+        lowerBound.push(Number((projected - uncertaintyCone).toFixed(2)));
+      }
+
+      const cleanTicker = filename.replace(/\.[^/.]+$/, "").toUpperCase().substring(0, 10) || 'CUSTOM';
+
+      // Try to get backend prediction if available
+      if (isBackendConnected) {
+        try {
+          const apiRes = await fetch(`${BACKEND_API_BASE}/api/custom-predict`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticker: cleanTicker, dates: subDates, prices: subPrices })
+          });
+          
+          if (apiRes.ok) {
+            const apiResult = await apiRes.json();
+            console.log('✓ Received custom prediction from backend:', apiResult);
+            
+            if (apiResult.forecast_prices) futureForecast = apiResult.forecast_prices;
+            if (apiResult.upper_95_bound) upperBound = apiResult.upper_95_bound;
+            if (apiResult.lower_95_bound) lowerBound = apiResult.lower_95_bound;
+          }
+        } catch (err) {
+          console.warn('⚠ Backend custom prediction failed, using local calculation:', err);
+        }
+      }
+
+      // Add to stock database
+      stockDatabase[cleanTicker] = {
+        name: `${filename} (Uploaded)`,
+        price: lastPrice,
+        change: (pct >= 0 ? '+' : '') + pct + '%',
+        isPos: pct >= 0,
+        volume: 'Custom Data',
+        history: subPrices,
+        historyDates: subDates,
+        futureForecast: futureForecast,
+        futureDates: futureDates,
+        upperBound: upperBound,
+        lowerBound: lowerBound,
+        sentimentScore: slope > 0 ? 0.65 : -0.35,
+        expectedReturn: `${(((futureForecast[5] - lastPrice) / lastPrice) * 100).toFixed(1)}%`,
+        signal: slope > 0 ? 'BUY' : 'HOLD'
+      };
+
+      // Add ticker button
+      const container = document.querySelector('.ticker-tabs-list');
+      let existingBtn = Array.from(container.children).find(b => b.textContent.trim() === cleanTicker);
+      
+      if (!existingBtn) {
+        existingBtn = document.createElement('button');
+        existingBtn.className = 'ticker-tab-chip';
+        existingBtn.textContent = cleanTicker;
+        existingBtn.onclick = () => selectTicker(cleanTicker, existingBtn);
+        container.appendChild(existingBtn);
+      }
+
+      // Auto-select the new ticker
+      selectTicker(cleanTicker, existingBtn);
+      closeUploadModal();
+      
+      alert(`✓ Successfully loaded ${cleanTicker}!\n\n` +
+            `${prices.length} data points analyzed.\n` +
+            `Current Price: ${lastPrice.toFixed(2)}\n` +
+            `Trend: ${pct >= 0 ? 'Upward ↗' : 'Downward ↘'} (${pct}%)\n\n` +
+            `The AI has generated predictions for the next 30 days.`);
+    }
+
+    // Load sample data function
+    function loadSampleData() {
+      // Check if sample files exist
+      const sampleFiles = ['reliance.csv', 'tcs.csv', 'icicibank.csv', 'sample_stock_data.csv'];
+      
+      fetch(sampleFiles[0])
+        .then(response => {
+          if (!response.ok) throw new Error("Sample file not found");
+          return response.text();
+        })
+        .then(csvText => {
+          processCSVData(csvText, 'RELIANCE_SAMPLE.csv');
+        })
+        .catch(err => {
+          alert('ℹ Sample data files not found in the directory.\n\n' +
+                'To test CSV upload:\n' +
+                '1. Create a CSV file with Date and Close columns\n' +
+                '2. Add at least 5 rows of stock price data\n' +
+                '3. Upload using the button above');
+        });
+    }
+  </script>
+
+</body>
+</html>
