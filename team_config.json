@@ -1,0 +1,11 @@
+{
+  "team_password": "quantpulse2026",
+  "server_name": "QuantPulse AI Team Host Server",
+  "allow_code_edits": true,
+  "allowed_files": [
+    "index.html",
+    "backend/main.py",
+    "sample_stock_data.csv",
+    "PRESENTATION_GUIDE.md"
+  ]
+}

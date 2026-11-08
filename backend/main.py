@@ -3,11 +3,14 @@ import sqlite3
 import math
 import csv
 import json
+import socket
+import shutil
 import urllib.request
 import datetime
 from typing import Optional, List, Dict
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
 app = FastAPI(
@@ -24,6 +27,66 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+CONFIG_PATH = PROJECT_ROOT / "team_config.json"
+
+
+def get_local_ip() -> str:
+    """Detects host machine's local IP address on Wi-Fi / LAN."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
+
+def get_team_config() -> dict:
+    """Reads team configuration with default fallback."""
+    default_config = {
+        "team_password": "quantpulse2026",
+        "server_name": "QuantPulse AI Team Host Server",
+        "allow_code_edits": True,
+        "allowed_files": [
+            "index.html",
+            "backend/main.py",
+            "sample_stock_data.csv",
+            "PRESENTATION_GUIDE.md"
+        ]
+    }
+    if CONFIG_PATH.exists():
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return default_config
+
+
+def save_team_config(cfg: dict):
+    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=2)
+
+
+@app.get("/")
+@app.get("/dashboard")
+def serve_dashboard():
+    """Serves the full QuantPulse AI frontend directly to teammates over the network."""
+    index_file = PROJECT_ROOT / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return {"message": "QuantPulse AI API running", "docs": "/docs"}
+
+
+@app.get("/sample_stock_data.csv")
+def serve_sample_csv():
+    csv_file = PROJECT_ROOT / "sample_stock_data.csv"
+    if csv_file.exists():
+        return FileResponse(csv_file, media_type="text/csv")
+    raise HTTPException(status_code=404, detail="File not found")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DB_DIR = PROJECT_ROOT / "data"
@@ -608,6 +671,132 @@ def custom_predict(payload: CustomDataPayload):
     )
 
 
+# ==============================================================================
+# TEAM HOST COLLABORATION & PASSWORD ACCESS ENDPOINTS
+# ==============================================================================
+class TeamLoginPayload(BaseModel):
+    password: str
+
+
+class FileEditPayload(BaseModel):
+    password: str
+    filename: str
+    content: str
+
+
+class ChangePasswordPayload(BaseModel):
+    old_password: str
+    new_password: str
+
+
+@app.get("/api/team/info")
+def get_team_info():
+    """Returns host server network IP, active status, and allowed file list."""
+    cfg = get_team_config()
+    local_ip = get_local_ip()
+    return {
+        "server_name": cfg.get("server_name", "QuantPulse AI Host Server"),
+        "local_ip": local_ip,
+        "port": 8000,
+        "network_url": f"http://{local_ip}:8000",
+        "allow_code_edits": cfg.get("allow_code_edits", True),
+        "allowed_files": cfg.get("allowed_files", []),
+        "active_ticker_count": len(SYMBOL_MAP),
+        "status": "ONLINE"
+    }
+
+
+@app.post("/api/team/login")
+def team_login(payload: TeamLoginPayload):
+    """Authenticates teammates with the host server password."""
+    cfg = get_team_config()
+    expected_pw = cfg.get("team_password", "quantpulse2026")
+    if payload.password == expected_pw:
+        return {
+            "authenticated": True,
+            "role": "TEAM_COLLABORATOR",
+            "message": "Access granted to QuantPulse host server.",
+            "server_ip": get_local_ip(),
+            "allowed_files": cfg.get("allowed_files", [])
+        }
+    raise HTTPException(status_code=401, detail="Invalid team access password.")
+
+
+@app.get("/api/team/read-file")
+def read_project_file(filename: str = Query(...), password: str = Query(...)):
+    """Allows authenticated teammates to view file code in browser."""
+    cfg = get_team_config()
+    if password != cfg.get("team_password", "quantpulse2026"):
+        raise HTTPException(status_code=401, detail="Invalid team password.")
+    
+    allowed = cfg.get("allowed_files", [])
+    if filename not in allowed:
+        raise HTTPException(status_code=403, detail=f"File '{filename}' is not in allowed editing list.")
+    
+    fpath = PROJECT_ROOT / filename
+    if not fpath.exists():
+        raise HTTPException(status_code=404, detail="File not found.")
+    
+    try:
+        with open(fpath, "r", encoding="utf-8") as f:
+            content = f.read()
+        return {"filename": filename, "content": content}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/team/edit-file")
+def edit_project_file(payload: FileEditPayload):
+    """Allows authenticated teammates to save edits to allowed project files with safety backup."""
+    cfg = get_team_config()
+    if payload.password != cfg.get("team_password", "quantpulse2026"):
+        raise HTTPException(status_code=401, detail="Invalid team password.")
+    
+    if not cfg.get("allow_code_edits", True):
+        raise HTTPException(status_code=403, detail="Remote code editing is disabled in team_config.json.")
+    
+    allowed = cfg.get("allowed_files", [])
+    if payload.filename not in allowed:
+        raise HTTPException(status_code=403, detail=f"File '{payload.filename}' is protected or not allowed for remote edits.")
+    
+    fpath = PROJECT_ROOT / payload.filename
+    # Create safety backup (.bak) before saving
+    if fpath.exists():
+        backup_path = fpath.with_suffix(fpath.suffix + ".bak")
+        shutil.copy2(fpath, backup_path)
+    
+    with open(fpath, "w", encoding="utf-8") as f:
+        f.write(payload.content)
+    
+    return {
+        "success": True,
+        "message": f"Successfully updated '{payload.filename}'. Backup saved to '{payload.filename}.bak'.",
+        "updated_at": datetime.datetime.now().isoformat()
+    }
+
+
+@app.post("/api/team/change-password")
+def change_team_password(payload: ChangePasswordPayload):
+    """Allows host to update team password."""
+    cfg = get_team_config()
+    if payload.old_password != cfg.get("team_password", "quantpulse2026"):
+        raise HTTPException(status_code=401, detail="Current password incorrect.")
+    
+    if len(payload.new_password.strip()) < 4:
+        raise HTTPException(status_code=400, detail="Password must be at least 4 characters.")
+    
+    cfg["team_password"] = payload.new_password.strip()
+    save_team_config(cfg)
+    return {"success": True, "message": "Team password updated successfully."}
+
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    local_ip = get_local_ip()
+    print("=" * 72)
+    print("🚀 QuantPulse AI - Real-Time Market Server & Team Host Gateway")
+    print(f"📡 Local Dashboard:   http://localhost:8000")
+    print(f"👥 Teammate Network:  http://{local_ip}:8000")
+    print(f"🔑 Team Access Pass:  {get_team_config().get('team_password', 'quantpulse2026')}")
+    print("=" * 72)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
