@@ -7,6 +7,7 @@ import socket
 import shutil
 import urllib.request
 import datetime
+import subprocess
 from typing import Optional, List, Dict
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -47,7 +48,7 @@ def get_local_ip() -> str:
 def get_team_config() -> dict:
     """Reads team configuration with default fallback."""
     default_config = {
-        "team_password": "quantpulse2026",
+        "team_password": "GRACEINFITY",
         "server_name": "QuantPulse AI Team Host Server",
         "allow_code_edits": True,
         "allowed_files": [
@@ -710,7 +711,7 @@ def get_team_info():
 def team_login(payload: TeamLoginPayload):
     """Authenticates teammates with the host server password."""
     cfg = get_team_config()
-    expected_pw = cfg.get("team_password", "quantpulse2026")
+    expected_pw = cfg.get("team_password", "GRACEINFITY")
     if payload.password == expected_pw:
         return {
             "authenticated": True,
@@ -726,7 +727,7 @@ def team_login(payload: TeamLoginPayload):
 def read_project_file(filename: str = Query(...), password: str = Query(...)):
     """Allows authenticated teammates to view file code in browser."""
     cfg = get_team_config()
-    if password != cfg.get("team_password", "quantpulse2026"):
+    if password != cfg.get("team_password", "GRACEINFITY"):
         raise HTTPException(status_code=401, detail="Invalid team password.")
     
     allowed = cfg.get("allowed_files", [])
@@ -749,7 +750,7 @@ def read_project_file(filename: str = Query(...), password: str = Query(...)):
 def edit_project_file(payload: FileEditPayload):
     """Allows authenticated teammates to save edits to allowed project files with safety backup."""
     cfg = get_team_config()
-    if payload.password != cfg.get("team_password", "quantpulse2026"):
+    if payload.password != cfg.get("team_password", "GRACEINFITY"):
         raise HTTPException(status_code=401, detail="Invalid team password.")
     
     if not cfg.get("allow_code_edits", True):
@@ -779,7 +780,7 @@ def edit_project_file(payload: FileEditPayload):
 def change_team_password(payload: ChangePasswordPayload):
     """Allows host to update team password."""
     cfg = get_team_config()
-    if payload.old_password != cfg.get("team_password", "quantpulse2026"):
+    if payload.old_password != cfg.get("team_password", "GRACEINFITY"):
         raise HTTPException(status_code=401, detail="Current password incorrect.")
     
     if len(payload.new_password.strip()) < 4:
@@ -790,6 +791,185 @@ def change_team_password(payload: ChangePasswordPayload):
     return {"success": True, "message": "Team password updated successfully."}
 
 
+# ==============================================================================
+# GITHUB COLLABORATION & DIRECT COMMIT / PUSH ENDPOINTS
+# ==============================================================================
+class GitCommitPayload(BaseModel):
+    password: str
+    message: str
+    author_name: Optional[str] = "Team Member"
+    files: Optional[List[str]] = None
+    push: bool = True
+
+
+class GitPullPayload(BaseModel):
+    password: str
+
+
+@app.get("/api/git/status")
+def get_git_status():
+    """Returns local git working tree status, current branch, and remote info."""
+    try:
+        branch = subprocess.check_output(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=PROJECT_ROOT, universal_newlines=True
+        ).strip()
+        status_out = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            cwd=PROJECT_ROOT, universal_newlines=True
+        ).strip()
+        remote_out = subprocess.check_output(
+            ["git", "remote", "get-url", "origin"],
+            cwd=PROJECT_ROOT, universal_newlines=True
+        ).strip()
+        return {
+            "branch": branch,
+            "clean": len(status_out) == 0,
+            "modified_files": [line.strip() for line in status_out.splitlines() if line.strip()],
+            "remote": remote_out,
+            "github_repo_url": "https://github.com/Njaya6/Group6_Advanced_Python_Project-",
+            "github_web_editor": "https://github.dev/Njaya6/Group6_Advanced_Python_Project-"
+        }
+    except Exception as e:
+        return {
+            "branch": "main",
+            "clean": True,
+            "modified_files": [],
+            "remote": "https://github.com/Njaya6/Group6_Advanced_Python_Project-.git",
+            "github_repo_url": "https://github.com/Njaya6/Group6_Advanced_Python_Project-",
+            "github_web_editor": "https://github.dev/Njaya6/Group6_Advanced_Python_Project-",
+            "error": str(e)
+        }
+
+
+@app.get("/api/git/log")
+def get_git_log(limit: int = 10):
+    """Returns the latest git commits with author and commit message."""
+    try:
+        raw_log = subprocess.check_output(
+            ["git", "log", f"-n{limit}", "--format=%h|%an|%ad|%s", "--date=short"],
+            cwd=PROJECT_ROOT, universal_newlines=True
+        ).strip()
+        commits = []
+        for line in raw_log.splitlines():
+            parts = line.split("|", 3)
+            if len(parts) == 4:
+                commits.append({
+                    "hash": parts[0],
+                    "author": parts[1],
+                    "date": parts[2],
+                    "message": parts[3],
+                    "url": f"https://github.com/Njaya6/Group6_Advanced_Python_Project-/commit/{parts[0]}"
+                })
+        return {"commits": commits}
+    except Exception as e:
+        return {"commits": [], "error": str(e)}
+
+
+@app.post("/api/git/commit")
+def git_commit_and_push(payload: GitCommitPayload):
+    """Allows authenticated team members to commit and push changes directly to GitHub."""
+    cfg = get_team_config()
+    if payload.password != cfg.get("team_password", "GRACEINFITY"):
+        raise HTTPException(status_code=401, detail="Invalid team access password.")
+    
+    msg = payload.message.strip()
+    if not msg:
+        raise HTTPException(status_code=400, detail="Commit message cannot be empty.")
+    
+    author = payload.author_name.strip() if payload.author_name else "Team Member"
+    author_str = f"{author} <team@quantpulse.ai>"
+
+    try:
+        # 1. Stage files
+        if payload.files and len(payload.files) > 0:
+            for f in payload.files:
+                subprocess.check_call(["git", "add", f], cwd=PROJECT_ROOT)
+        else:
+            subprocess.check_call(["git", "add", "-A"], cwd=PROJECT_ROOT)
+        
+        # 2. Check if there are staged changes
+        diff_cached = subprocess.check_output(
+            ["git", "diff", "--cached", "--name-only"],
+            cwd=PROJECT_ROOT, universal_newlines=True
+        ).strip()
+        
+        if not diff_cached:
+            return {
+                "success": True,
+                "message": "No new changes to commit. Working tree is clean.",
+                "committed": False
+            }
+        
+        # 3. Commit
+        subprocess.check_output(
+            ["git", "commit", "-m", msg, f"--author={author_str}"],
+            cwd=PROJECT_ROOT, universal_newlines=True
+        ).strip()
+        
+        # Get new commit hash
+        commit_hash = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=PROJECT_ROOT, universal_newlines=True
+        ).strip()
+
+        push_output = ""
+        pushed = False
+        if payload.push:
+            # 4. Push to GitHub origin main
+            push_res = subprocess.run(
+                ["git", "push", "origin", "main"],
+                cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30
+            )
+            if push_res.returncode != 0:
+                return {
+                    "success": True,
+                    "committed": True,
+                    "pushed": False,
+                    "commit_hash": commit_hash,
+                    "message": f"Committed ({commit_hash}) successfully, but push failed: {push_res.stderr.strip()}",
+                    "commit_url": f"https://github.com/Njaya6/Group6_Advanced_Python_Project-/commit/{commit_hash}"
+                }
+            push_output = push_res.stdout.strip() or push_res.stderr.strip()
+            pushed = True
+
+        return {
+            "success": True,
+            "committed": True,
+            "pushed": pushed,
+            "commit_hash": commit_hash,
+            "message": f"Successfully committed & pushed ({commit_hash}) to GitHub main!",
+            "author": author,
+            "commit_url": f"https://github.com/Njaya6/Group6_Advanced_Python_Project-/commit/{commit_hash}",
+            "push_output": push_output
+        }
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(status_code=500, detail=f"Git command failed: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/git/pull")
+def git_pull(payload: GitPullPayload):
+    """Pulls latest changes from GitHub origin main."""
+    cfg = get_team_config()
+    if payload.password != cfg.get("team_password", "GRACEINFITY"):
+        raise HTTPException(status_code=401, detail="Invalid team access password.")
+    try:
+        res = subprocess.run(
+            ["git", "pull", "origin", "main"],
+            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30
+        )
+        if res.returncode != 0:
+            raise HTTPException(status_code=500, detail=f"Git pull failed: {res.stderr.strip()}")
+        return {
+            "success": True,
+            "message": res.stdout.strip() or "Already up to date."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
     local_ip = get_local_ip()
@@ -797,6 +977,6 @@ if __name__ == "__main__":
     print("🚀 QuantPulse AI - Real-Time Market Server & Team Host Gateway")
     print(f"📡 Local Dashboard:   http://localhost:8000")
     print(f"👥 Teammate Network:  http://{local_ip}:8000")
-    print(f"🔑 Team Access Pass:  {get_team_config().get('team_password', 'quantpulse2026')}")
+    print(f"🔑 Team Access Pass:  {get_team_config().get('team_password', 'GRACEINFITY')}")
     print("=" * 72)
     uvicorn.run(app, host="0.0.0.0", port=8000)

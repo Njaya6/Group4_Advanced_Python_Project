@@ -22,6 +22,6 @@ echo.
 echo ====================================================================
 echo   Live system active!
 echo   - Local Dashboard: http://127.0.0.1:8000
-echo   - Team Default Password: quantpulse2026
+echo   - Team Default Password: GRACEINFITY
 echo   - Swagger API Docs: http://127.0.0.1:8000/docs
 echo ====================================================================

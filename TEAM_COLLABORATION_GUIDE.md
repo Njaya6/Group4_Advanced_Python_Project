@@ -43,17 +43,17 @@ We have built a **Team Server Access & Password Protection Gateway** directly in
    🚀 QuantPulse AI - Real-Time Market Server & Team Host Gateway
    📡 Local Dashboard:   http://localhost:8000
    👥 Teammate Network:  http://192.168.x.x:8000
-   🔑 Team Access Pass:  quantpulse2026
+   🔑 Team Access Pass:  GRACEINFITY
    ========================================================================
    ```
 3. **Give your teammates:**
    - The Network URL: `http://<YOUR_LOCAL_IP>:8000` (shown in your terminal)
-   - The Team Password: `quantpulse2026` (or whatever you change it to)
+   - The Team Password: `GRACEINFITY` (or whatever you change it to)
 
 4. **What your teammates can do on their own computers:**
    - They open `http://<YOUR_LOCAL_IP>:8000` in their browser.
    - They click the **`👥 Team Access`** button in the top navigation bar.
-   - They enter the password (e.g. `GRACEINFINITY`) and click **Authorize Access**.
+   - They enter the password (`GRACEINFITY`) and click **Authorize Access**.
    - **Team Developer Mode unlocks!**
      - **⚡ 1-Click Feature Jump Buttons:**
        - **`📰 News Sentiment`**: Instantly jumps to the News Sentiment tab and opens the **Live News Publisher dock** where teammates can type new headlines, pick a stock (`RELIANCE`, `NVDA`, `TCS`, `TSLA`), choose polarity (`+0.92 Bullish`, `-0.75 Bearish`), and click **`+ Publish Live`**!
@@ -111,6 +111,27 @@ If your teammates are working from home:
 ### Option B: Cloudflare Tunnel or Ngrok with Password
 Run in terminal:
 ```powershell
-npx ngrok http 8000 --basic-auth "team:quantpulse2026"
+npx ngrok http 8000 --basic-auth "team:GRACEINFITY"
 ```
-Ngrok will give you an internet link (e.g. `https://xyz.ngrok-free.app`) where any teammate who enters username `team` and password `quantpulse2026` can access your server from anywhere in the world.
+Ngrok will give you an internet link (e.g. `https://xyz.ngrok-free.app`) where any teammate who enters username `team` and password `GRACEINFITY` can access your server from anywhere in the world.
+
+---
+
+## 🐙 5. Method 4: Direct GitHub Team Access & In-App Commit/Push Hub
+
+We have built a dedicated **GitHub Team Cloud & Direct Commit Platform** directly into the web application:
+
+### How Teammates Use It:
+1. Open the platform (`index.html` or `http://localhost:8000`).
+2. Click **`🐙 GitHub Hub`** in the top navigation bar (or inside the **`👥 Team Access`** modal).
+3. **Four Collaboration Options Available:**
+   - **`💻 Web VS Code (github.dev)`**: Opens `https://github.dev/Njaya6/Group6_Advanced_Python_Project-` in the browser. Any teammate can edit every file in full VS Code online, stage changes, commit, and push with zero software installation!
+   - **`🚀 In-App Direct Commit & Push`**:
+     - Pick a file (`index.html`, `backend/main.py`, `sample_stock_data.csv`, `README.md`, etc.).
+     - Edit the code right inside the browser.
+     - Enter their **Author Name** (e.g. `Grace`).
+     - Enter their **Commit Message** (e.g. `Updated Bayesian changepoint flexibility`).
+     - Enter Team Password (`GRACEINFITY`).
+     - Click **`🚀 Commit & Push Directly to GitHub`**. The platform automatically stages the files, commits with author attribution, and pushes to `origin/main`!
+   - **`🔄 Pull Latest from GitHub`**: Click to sync down recent commits made by teammates with 1 click.
+   - **`📜 Live Commit Feed`**: Shows the latest commits made by team members with author names, timestamps, and direct clickable diff links on GitHub!

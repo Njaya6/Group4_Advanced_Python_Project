@@ -1314,6 +1314,12 @@
         <span>👥 Team Access</span>
       </button>
 
+      <!-- GitHub Team Platform Button -->
+      <button onclick="openGitHubModal()" title="Direct GitHub Team Code Access, Edit & Commit" style="background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.25); color: #fff; padding: 4px 10px; border-radius: 6px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.2s;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        <span>🐙 GitHub Hub</span>
+      </button>
+
       <!-- Live API Connection Status Indicator -->
       <div id="backendStatusPill" onclick="openApiStatusModal()" title="Click to view API & In-Browser Engine Status" style="display: flex; align-items: center; gap: 6px; background: rgba(0, 230, 118, 0.08); border: 1px solid rgba(0, 230, 118, 0.35); padding: 4px 11px; border-radius: 20px; font-family: var(--font-mono); font-size: 10px; cursor: pointer; transition: all 0.2s;">
         <span id="apiStatusDot" class="pulse-dot" style="width: 6px; height: 6px; background: var(--green); box-shadow: 0 0 8px var(--green);"></span>
@@ -2254,7 +2260,7 @@
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="color: var(--text-dim);">CURRENT TEAM PASSWORD:</span>
-          <span id="teamCurrentPasswordDisplay" style="color: var(--green); font-weight: 700; background: #0c1524; padding: 2px 8px; border-radius: 4px; border: 1px solid #1f2e48;">quantpulse2026</span>
+          <span id="teamCurrentPasswordDisplay" style="color: var(--green); font-weight: 700; background: #0c1524; padding: 2px 8px; border-radius: 4px; border: 1px solid #1f2e48;">GRACEINFITY</span>
         </div>
       </div>
 
@@ -2336,10 +2342,22 @@
 
         <textarea id="teamFileContentTextarea" rows="9" style="width: 100%; background: #050810; border: 1px solid #19273f; color: #e2e8f0; font-family: var(--font-mono); font-size: 11px; padding: 10px; border-radius: 6px; resize: vertical; margin-bottom: 10px; line-height: 1.45;"></textarea>
         
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span id="teamSaveFeedback" style="font-size: 11px; font-family: var(--font-mono); color: var(--green);"></span>
-          <button class="btn-hero-primary" onclick="saveTeamFile()">Save Edits to Host Server</button>
+        <!-- Git Commit & Push Bar -->
+        <div style="background: #060b14; border: 1px solid #16243a; border-radius: 6px; padding: 10px; margin-bottom: 10px;">
+          <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+            <input type="text" id="teamAuthorInput" placeholder="Author Name (e.g. Grace)" style="flex: 1; min-width: 130px; background: #0c1422; border: 1px solid #22344e; color: #fff; padding: 6px 10px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px;">
+            <input type="text" id="teamCommitMsgInput" placeholder="Commit message (e.g. Update stock models &amp; news sentiment)..." style="flex: 2; min-width: 200px; background: #0c1422; border: 1px solid #22344e; color: #fff; padding: 6px 10px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px;">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button class="btn-hero-secondary" style="font-size: 11px; padding: 5px 10px;" onclick="saveTeamFile()">💾 Save to Server</button>
+              <button class="btn-hero-primary" style="font-size: 11px; padding: 5px 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #10b981;" onclick="commitAndPushFromTeamModal()">🚀 Commit &amp; Push to GitHub</button>
+              <button class="btn-hero-secondary" style="font-size: 11px; padding: 5px 10px;" onclick="pullFromGitHub('teamSaveFeedback')">🔄 Pull Latest</button>
+            </div>
+            <a href="https://github.dev/Njaya6/Group6_Advanced_Python_Project-" target="_blank" style="color: var(--cyan); font-family: var(--font-mono); font-size: 10.5px; text-decoration: none;">🌐 Open Web VSCode (github.dev) ↗</a>
+          </div>
         </div>
+        <div id="teamSaveFeedback" style="font-size: 11px; font-family: var(--font-mono); color: var(--green); margin-top: 4px; word-break: break-all;"></div>
       </div>
 
       <!-- VS Code Live Share Guide -->
@@ -2351,8 +2369,113 @@
       </div>
 
       <div class="dossier-actions">
+        <button class="btn-hero-secondary" onclick="openGitHubModal(); closeTeamModal();">🐙 GitHub Hub</button>
         <button class="btn-hero-secondary" onclick="promptChangeTeamPassword()">Change Password</button>
         <button class="btn-hero-primary" onclick="closeTeamModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL 5: GITHUB TEAM COLLABORATION & DIRECT COMMIT / PUSH PLATFORM
+       ========================================================================== -->
+  <div class="modal-overlay" id="githubModal">
+    <div class="modal-window" style="max-width: 780px; max-height: 90vh; overflow-y: auto;">
+      <button class="modal-close-btn" onclick="closeGitHubModal()">✕</button>
+
+      <div class="dossier-header">
+        <div class="dossier-badge-row">
+          <span class="chip-badge green">GITHUB CLOUD COLLABORATION</span>
+          <span class="chip-badge cyan" id="gitBranchBadge">BRANCH: MAIN</span>
+          <span class="chip-badge" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);">GROUP 6 PYTHON PROJECT</span>
+        </div>
+        <h2 class="dossier-title">GitHub Live Team Commit &amp; Code Hub</h2>
+        <div class="dossier-sub">Directly access, edit, commit, and push project code to GitHub so your entire team stays synchronized in real time.</div>
+      </div>
+
+      <!-- Quick Launch Toolbar -->
+      <div style="background: #090e18; border: 1px solid #1a283f; border-radius: 8px; padding: 14px; margin-bottom: 16px;">
+        <div style="font-size: 11px; font-weight: 700; color: var(--cyan); text-transform: uppercase; font-family: var(--font-mono); margin-bottom: 8px;">
+          ⚡ 1-Click Cloud IDE &amp; Repository Access:
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
+          <a href="https://github.dev/Njaya6/Group6_Advanced_Python_Project-" target="_blank" class="team-jump-btn" style="text-align: center; justify-content: center; text-decoration: none;">
+            <span>💻</span> <span>Web VS Code (github.dev)</span>
+          </a>
+          <a href="https://github.com/Njaya6/Group6_Advanced_Python_Project-" target="_blank" class="team-jump-btn" style="text-align: center; justify-content: center; text-decoration: none;">
+            <span>🐙</span> <span>GitHub Repository</span>
+          </a>
+          <a href="https://github.com/codespaces/new?repo=Njaya6/Group6_Advanced_Python_Project-" target="_blank" class="team-jump-btn" style="text-align: center; justify-content: center; text-decoration: none;">
+            <span>☁️</span> <span>GitHub Codespaces</span>
+          </a>
+          <button class="team-jump-btn" onclick="pullFromGitHub('githubActionFeedback')" style="justify-content: center;">
+            <span>🔄</span> <span>Pull Latest from GitHub</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Code Editor & Direct Commit Form -->
+      <div style="background: #0b121e; border: 1px solid #1d2d46; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); font-weight: 700;">SELECT FILE:</span>
+            <select id="githubFileSelect" onchange="loadGitHubFile()" style="background: #111a28; color: #fff; border: 1px solid #23344d; padding: 4px 8px; border-radius: 4px; font-family: var(--font-mono); font-size: 11.5px;">
+              <option value="index.html">index.html (Dashboard &amp; Logic)</option>
+              <option value="backend/main.py">backend/main.py (FastAPI Gateway)</option>
+              <option value="sample_stock_data.csv">sample_stock_data.csv (Historical Tickers)</option>
+              <option value="PRESENTATION_GUIDE.md">PRESENTATION_GUIDE.md (Project Guide)</option>
+              <option value="TEAM_COLLABORATION_GUIDE.md">TEAM_COLLABORATION_GUIDE.md</option>
+              <option value="README.md">README.md</option>
+            </select>
+          </div>
+          <a id="githubDirectEditLink" href="https://github.com/Njaya6/Group6_Advanced_Python_Project-/edit/main/index.html" target="_blank" style="color: var(--cyan); font-size: 11px; font-family: var(--font-mono); text-decoration: none;">
+            ✏️ Edit on GitHub.com ↗
+          </a>
+        </div>
+
+        <textarea id="githubFileContentTextarea" rows="9" style="width: 100%; background: #050810; border: 1px solid #19273f; color: #e2e8f0; font-family: var(--font-mono); font-size: 11px; padding: 10px; border-radius: 6px; resize: vertical; margin-bottom: 10px; line-height: 1.45;"></textarea>
+
+        <!-- Commit Form Inputs -->
+        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 8px; margin-bottom: 10px;">
+          <div>
+            <label style="font-size: 10px; color: var(--text-dim); font-family: var(--font-mono); display: block; margin-bottom: 4px;">TEAM MEMBER NAME:</label>
+            <input type="text" id="githubAuthorInput" placeholder="e.g. Grace" style="width: 100%; background: #070c16; border: 1px solid #22344e; color: #fff; padding: 6px 10px; border-radius: 4px; font-family: var(--font-mono); font-size: 11.5px;">
+          </div>
+          <div>
+            <label style="font-size: 10px; color: var(--text-dim); font-family: var(--font-mono); display: block; margin-bottom: 4px;">COMMIT MESSAGE:</label>
+            <input type="text" id="githubCommitMessageInput" placeholder="Describe changes made e.g. Tweak forecast parameters" style="width: 100%; background: #070c16; border: 1px solid #22344e; color: #fff; padding: 6px 10px; border-radius: 4px; font-family: var(--font-mono); font-size: 11.5px;">
+          </div>
+          <div>
+            <label style="font-size: 10px; color: var(--text-dim); font-family: var(--font-mono); display: block; margin-bottom: 4px;">TEAM PASSWORD:</label>
+            <input type="password" id="githubPasswordInput" placeholder="GRACEINFITY" style="width: 100%; background: #070c16; border: 1px solid #22344e; color: #fff; padding: 6px 10px; border-radius: 4px; font-family: var(--font-mono); font-size: 11.5px;">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div id="githubActionFeedback" style="font-size: 11px; font-family: var(--font-mono); color: var(--green); word-break: break-all;"></div>
+          <button class="btn-hero-primary" style="background: linear-gradient(135deg, #00f0ff 0%, #0077ff 100%); font-weight: 700; padding: 7px 16px;" onclick="executeGitHubCommitAndPush()">
+            🚀 Commit &amp; Push Directly to GitHub
+          </button>
+        </div>
+      </div>
+
+      <!-- Real-Time GitHub Commit Activity Feed -->
+      <div style="background: #090e18; border: 1px solid #1a283f; border-radius: 8px; padding: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--cyan); text-transform: uppercase; font-family: var(--font-mono);">
+            📜 Recent GitHub Team Commits
+          </span>
+          <button onclick="loadGitHubCommitHistory()" style="background: none; border: 1px solid #23344d; color: var(--text-dim); padding: 2px 8px; border-radius: 4px; font-size: 10px; font-family: var(--font-mono); cursor: pointer;">
+            🔄 Refresh Log
+          </button>
+        </div>
+        <div id="githubCommitLogList" style="display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; font-family: var(--font-mono); font-size: 11px;">
+          <div style="color: var(--text-dim); padding: 8px 0;">Loading repository commits...</div>
+        </div>
+      </div>
+
+      <div class="dossier-actions" style="margin-top: 16px;">
+        <button class="btn-hero-primary" onclick="closeGitHubModal()">Done</button>
       </div>
     </div>
   </div>
@@ -3713,7 +3836,7 @@
       }
 
       // Standalone validation fallback
-      if (pw === 'quantpulse2026' || pw === localStorage.getItem('qp_team_pw')) {
+      if (pw === 'GRACEINFITY' || pw === localStorage.getItem('qp_team_pw')) {
         authenticatedTeamPassword = pw;
         feedback.style.display = 'block';
         feedback.style.color = 'var(--green)';
@@ -3723,7 +3846,7 @@
       } else {
         feedback.style.display = 'block';
         feedback.style.color = 'var(--red)';
-        feedback.textContent = '✕ Incorrect password. Default password is quantpulse2026.';
+        feedback.textContent = '✕ Incorrect password. Default password is GRACEINFITY.';
       }
     }
 
@@ -3796,7 +3919,7 @@
     }
 
     async function promptChangeTeamPassword() {
-      const oldPw = prompt("Enter current team password (default: quantpulse2026):");
+      const oldPw = prompt("Enter current team password (default: GRACEINFITY):");
       if (!oldPw) return;
       const newPw = prompt("Enter NEW team password (at least 4 characters):");
       if (!newPw || newPw.trim().length < 4) {
@@ -3826,6 +3949,308 @@
       localStorage.setItem('qp_team_pw', newPw.trim());
       document.getElementById('teamCurrentPasswordDisplay').textContent = newPw.trim();
       alert(`Team password updated to: ${newPw.trim()}`);
+    }
+
+    // =========================================================================
+    // MODAL & GITHUB TEAM COLLABORATION ENGINE
+    // =========================================================================
+    const GITHUB_REPO_URL = 'https://github.com/Njaya6/Group6_Advanced_Python_Project-';
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function openGitHubModal() {
+      document.getElementById('githubModal').classList.add('open');
+      const authorInput = document.getElementById('githubAuthorInput');
+      if (authorInput && !authorInput.value) {
+        authorInput.value = localStorage.getItem('qp_team_author') || 'Grace';
+      }
+      const pwInput = document.getElementById('githubPasswordInput');
+      if (pwInput && !pwInput.value) {
+        pwInput.value = authenticatedTeamPassword || localStorage.getItem('qp_team_pw') || 'GRACEINFITY';
+      }
+      await loadGitHubFile();
+      await loadGitHubCommitHistory();
+    }
+
+    function closeGitHubModal() {
+      document.getElementById('githubModal').classList.remove('open');
+    }
+
+    async function loadGitHubFile() {
+      const filename = document.getElementById('githubFileSelect').value;
+      const textarea = document.getElementById('githubFileContentTextarea');
+      const directLink = document.getElementById('githubDirectEditLink');
+      if (directLink) {
+        directLink.href = `${GITHUB_REPO_URL}/edit/main/${filename}`;
+      }
+      const pw = authenticatedTeamPassword || (document.getElementById('githubPasswordInput') ? document.getElementById('githubPasswordInput').value : '') || 'GRACEINFITY';
+
+      if (isBackendConnected) {
+        try {
+          const res = await fetch(`${BACKEND_API_BASE}/api/team/read-file?filename=${encodeURIComponent(filename)}&password=${encodeURIComponent(pw)}`);
+          if (res.ok) {
+            const data = await res.json();
+            textarea.value = data.content;
+            return;
+          }
+        } catch (e) {}
+      }
+
+      // Fallback local fetch
+      try {
+        const res = await fetch(filename);
+        if (res.ok) {
+          textarea.value = await res.text();
+          return;
+        }
+      } catch (e) {}
+
+      textarea.value = `// File: ${filename}\n// Connected to GitHub Repository: ${GITHUB_REPO_URL}\n// Ready to edit and push.`;
+    }
+
+    async function executeGitHubCommitAndPush() {
+      const filename = document.getElementById('githubFileSelect').value;
+      const content = document.getElementById('githubFileContentTextarea').value;
+      const author = (document.getElementById('githubAuthorInput').value || 'Grace').trim();
+      const message = (document.getElementById('githubCommitMessageInput').value || `Updated ${filename}`).trim();
+      const password = (document.getElementById('githubPasswordInput').value || authenticatedTeamPassword || 'GRACEINFITY').trim();
+      const feedback = document.getElementById('githubActionFeedback');
+
+      if (!message) {
+        alert('Please enter a commit message describing your changes.');
+        return;
+      }
+
+      localStorage.setItem('qp_team_author', author);
+      localStorage.setItem('qp_team_pw', password);
+      feedback.style.color = 'var(--cyan)';
+      feedback.textContent = '⏳ Saving file, staging, committing and pushing to GitHub...';
+
+      if (isBackendConnected) {
+        try {
+          // 1. Save file to disk
+          const saveRes = await fetch(`${BACKEND_API_BASE}/api/team/edit-file`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password, filename, content })
+          });
+          if (!saveRes.ok) {
+            const err = await saveRes.json();
+            feedback.style.color = 'var(--red)';
+            feedback.textContent = `✕ File save failed: ${err.detail || 'Forbidden'}`;
+            return;
+          }
+
+          // 2. Commit and push
+          const commitRes = await fetch(`${BACKEND_API_BASE}/api/git/commit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              password,
+              message,
+              author_name: author,
+              push: true
+            })
+          });
+
+          const data = await commitRes.json();
+          if (commitRes.ok && data.success) {
+            feedback.style.color = 'var(--green)';
+            feedback.innerHTML = `✓ <strong>${data.message}</strong> <a href="${data.commit_url}" target="_blank" style="color:var(--cyan); text-decoration:underline;">View on GitHub ↗</a>`;
+            await loadGitHubCommitHistory();
+            return;
+          } else {
+            feedback.style.color = 'var(--red)';
+            feedback.textContent = `✕ Commit/Push failed: ${data.detail || data.message || 'Error'}`;
+            return;
+          }
+        } catch (e) {
+          feedback.style.color = 'var(--red)';
+          feedback.textContent = `✕ Connection error: ${e.message}`;
+          return;
+        }
+      }
+
+      // Standalone browser mode: direct web link
+      feedback.style.color = 'var(--cyan)';
+      feedback.innerHTML = `ℹ️ Browser mode: <a href="${GITHUB_REPO_URL}/edit/main/${filename}" target="_blank" style="color:var(--cyan); text-decoration:underline;">Click here to edit & commit directly on GitHub.com ↗</a>`;
+    }
+
+    async function commitAndPushFromTeamModal() {
+      const filename = document.getElementById('teamFileSelect').value;
+      const content = document.getElementById('teamFileContentTextarea').value;
+      const author = (document.getElementById('teamAuthorInput').value || 'Team Member').trim();
+      const message = (document.getElementById('teamCommitMsgInput').value || `Updated ${filename}`).trim();
+      const password = authenticatedTeamPassword || 'GRACEINFITY';
+      const feedback = document.getElementById('teamSaveFeedback');
+
+      if (!authenticatedTeamPassword) {
+        alert('Please authorize with the team password first.');
+        return;
+      }
+      if (!message) {
+        alert('Please enter a commit message.');
+        return;
+      }
+
+      feedback.style.color = 'var(--cyan)';
+      feedback.textContent = '⏳ Saving, committing, and pushing to GitHub...';
+
+      if (isBackendConnected) {
+        try {
+          const saveRes = await fetch(`${BACKEND_API_BASE}/api/team/edit-file`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password, filename, content })
+          });
+          if (!saveRes.ok) {
+            const err = await saveRes.json();
+            feedback.style.color = 'var(--red)';
+            feedback.textContent = `✕ Save failed: ${err.detail || 'Forbidden'}`;
+            return;
+          }
+
+          const commitRes = await fetch(`${BACKEND_API_BASE}/api/git/commit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              password,
+              message,
+              author_name: author,
+              push: true
+            })
+          });
+          const data = await commitRes.json();
+          if (commitRes.ok && data.success) {
+            feedback.style.color = 'var(--green)';
+            feedback.innerHTML = `✓ ${data.message} <a href="${data.commit_url}" target="_blank" style="color:var(--cyan); text-decoration:underline;">View on GitHub ↗</a>`;
+            return;
+          } else {
+            feedback.style.color = 'var(--red)';
+            feedback.textContent = `✕ ${data.detail || data.message || 'Push failed'}`;
+            return;
+          }
+        } catch (e) {
+          feedback.style.color = 'var(--red)';
+          feedback.textContent = `✕ Network error: ${e.message}`;
+          return;
+        }
+      }
+
+      feedback.style.color = 'var(--cyan)';
+      feedback.textContent = 'Backend offline. Changes cached. Launch backend/main.py to push live.';
+    }
+
+    async function pullFromGitHub(targetFeedbackId) {
+      const feedback = document.getElementById(targetFeedbackId || 'githubActionFeedback');
+      const password = authenticatedTeamPassword || (document.getElementById('githubPasswordInput') ? document.getElementById('githubPasswordInput').value : '') || 'GRACEINFITY';
+
+      if (feedback) {
+        feedback.style.color = 'var(--cyan)';
+        feedback.textContent = '🔄 Pulling latest changes from GitHub...';
+      }
+
+      if (isBackendConnected) {
+        try {
+          const res = await fetch(`${BACKEND_API_BASE}/api/git/pull`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            if (feedback) {
+              feedback.style.color = 'var(--green)';
+              feedback.textContent = `✓ Git Pull: ${data.message}`;
+            }
+            if (document.getElementById('githubModal').classList.contains('open')) {
+              await loadGitHubFile();
+              await loadGitHubCommitHistory();
+            }
+            if (document.getElementById('teamModal').classList.contains('open')) {
+              await loadTeamFile();
+            }
+            return;
+          } else {
+            if (feedback) {
+              feedback.style.color = 'var(--red)';
+              feedback.textContent = `✕ Git Pull failed: ${data.detail || 'Error'}`;
+            }
+            return;
+          }
+        } catch (e) {
+          if (feedback) {
+            feedback.style.color = 'var(--red)';
+            feedback.textContent = `✕ Pull error: ${e.message}`;
+          }
+          return;
+        }
+      }
+
+      if (feedback) {
+        feedback.style.color = 'var(--cyan)';
+        feedback.textContent = 'Standalone mode: Already browsing repository HEAD.';
+      }
+    }
+
+    async function loadGitHubCommitHistory() {
+      const container = document.getElementById('githubCommitLogList');
+      if (!container) return;
+
+      // Try local FastAPI backend first
+      if (isBackendConnected) {
+        try {
+          const res = await fetch(`${BACKEND_API_BASE}/api/git/log?limit=8`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.commits && data.commits.length > 0) {
+              renderCommitList(data.commits);
+              return;
+            }
+          }
+        } catch (e) {}
+      }
+
+      // Fallback: GitHub Public REST API
+      try {
+        const res = await fetch('https://api.github.com/repos/Njaya6/Group6_Advanced_Python_Project-/commits?per_page=8');
+        if (res.ok) {
+          const items = await res.json();
+          const commits = items.map(c => ({
+            hash: c.sha.substring(0, 7),
+            author: c.commit.author.name,
+            date: c.commit.author.date ? c.commit.author.date.substring(0, 10) : '',
+            message: c.commit.message.split('\n')[0],
+            url: c.html_url
+          }));
+          renderCommitList(commits);
+          return;
+        }
+      } catch (e) {}
+
+      container.innerHTML = `<div style="color:var(--text-dim); padding:6px 0;">Commit history available once connected to GitHub.</div>`;
+    }
+
+    function renderCommitList(commits) {
+      const container = document.getElementById('githubCommitLogList');
+      if (!container) return;
+      container.innerHTML = commits.map(c => `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #060b13; border: 1px solid #16243a; padding: 6px 10px; border-radius: 4px; gap: 8px;">
+          <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+            <a href="${c.url}" target="_blank" style="color: var(--cyan); text-decoration: none; font-weight: 700;">${c.hash}</a>
+            <span style="color: #fff; margin-left: 6px;">${escapeHtml(c.message)}</span>
+            <span style="color: var(--text-dim); margin-left: 6px;">by <strong>${escapeHtml(c.author)}</strong></span>
+          </div>
+          <span style="color: var(--text-dim); font-size: 10px; white-space: nowrap;">${c.date}</span>
+        </div>
+      `).join('');
     }
 
     function openUploadModal() {
