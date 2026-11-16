@@ -2354,7 +2354,7 @@
               <button class="btn-hero-primary" style="font-size: 11px; padding: 5px 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #10b981;" onclick="commitAndPushFromTeamModal()">🚀 Commit &amp; Push to GitHub</button>
               <button class="btn-hero-secondary" style="font-size: 11px; padding: 5px 10px;" onclick="pullFromGitHub('teamSaveFeedback')">🔄 Pull Latest</button>
             </div>
-            <a href="https://github.dev/Njaya6/Group6_Advanced_Python_Project-" target="_blank" style="color: var(--cyan); font-family: var(--font-mono); font-size: 10.5px; text-decoration: none;">🌐 Open Web VSCode (github.dev) ↗</a>
+            <a href="https://github.dev/Njaya6/Group4_Advanced_Python_Project" target="_blank" style="color: var(--cyan); font-family: var(--font-mono); font-size: 10.5px; text-decoration: none;">🌐 Open Web VSCode (github.dev) ↗</a>
           </div>
         </div>
         <div id="teamSaveFeedback" style="font-size: 11px; font-family: var(--font-mono); color: var(--green); margin-top: 4px; word-break: break-all;"></div>
@@ -2387,7 +2387,7 @@
         <div class="dossier-badge-row">
           <span class="chip-badge green">GITHUB CLOUD COLLABORATION</span>
           <span class="chip-badge cyan" id="gitBranchBadge">BRANCH: MAIN</span>
-          <span class="chip-badge" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);">GROUP 6 PYTHON PROJECT</span>
+          <span class="chip-badge" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);">GROUP 4 PYTHON PROJECT</span>
         </div>
         <h2 class="dossier-title">GitHub Live Team Commit &amp; Code Hub</h2>
         <div class="dossier-sub">Directly access, edit, commit, and push project code to GitHub so your entire team stays synchronized in real time.</div>
@@ -2399,13 +2399,13 @@
           ⚡ 1-Click Cloud IDE &amp; Repository Access:
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
-          <a href="https://github.dev/Njaya6/Group6_Advanced_Python_Project-" target="_blank" class="team-jump-btn" style="text-align: center; justify-content: center; text-decoration: none;">
+          <a href="https://github.dev/Njaya6/Group4_Advanced_Python_Project" target="_blank" class="team-jump-btn" style="text-align: center; justify-content: center; text-decoration: none;">
             <span>💻</span> <span>Web VS Code (github.dev)</span>
           </a>
-          <a href="https://github.com/Njaya6/Group6_Advanced_Python_Project-" target="_blank" class="team-jump-btn" style="text-align: center; justify-content: center; text-decoration: none;">
+          <a href="https://github.com/Njaya6/Group4_Advanced_Python_Project" target="_blank" class="team-jump-btn" style="text-align: center; justify-content: center; text-decoration: none;">
             <span>🐙</span> <span>GitHub Repository</span>
           </a>
-          <a href="https://github.com/codespaces/new?repo=Njaya6/Group6_Advanced_Python_Project-" target="_blank" class="team-jump-btn" style="text-align: center; justify-content: center; text-decoration: none;">
+          <a href="https://github.com/codespaces/new?repo=Njaya6/Group4_Advanced_Python_Project" target="_blank" class="team-jump-btn" style="text-align: center; justify-content: center; text-decoration: none;">
             <span>☁️</span> <span>GitHub Codespaces</span>
           </a>
           <button class="team-jump-btn" onclick="pullFromGitHub('githubActionFeedback')" style="justify-content: center;">
@@ -2428,7 +2428,7 @@
               <option value="README.md">README.md</option>
             </select>
           </div>
-          <a id="githubDirectEditLink" href="https://github.com/Njaya6/Group6_Advanced_Python_Project-/edit/main/index.html" target="_blank" style="color: var(--cyan); font-size: 11px; font-family: var(--font-mono); text-decoration: none;">
+          <a id="githubDirectEditLink" href="https://github.com/Njaya6/Group4_Advanced_Python_Project/edit/main/index.html" target="_blank" style="color: var(--cyan); font-size: 11px; font-family: var(--font-mono); text-decoration: none;">
             ✏️ Edit on GitHub.com ↗
           </a>
         </div>
@@ -3954,7 +3954,7 @@
     // =========================================================================
     // MODAL & GITHUB TEAM COLLABORATION ENGINE
     // =========================================================================
-    const GITHUB_REPO_URL = 'https://github.com/Njaya6/Group6_Advanced_Python_Project-';
+    const GITHUB_REPO_URL = 'https://github.com/Njaya6/Group4_Advanced_Python_Project';
 
     function escapeHtml(str) {
       if (!str) return '';
@@ -4220,7 +4220,7 @@
 
       // Fallback: GitHub Public REST API
       try {
-        const res = await fetch('https://api.github.com/repos/Njaya6/Group6_Advanced_Python_Project-/commits?per_page=8');
+        const res = await fetch('https://api.github.com/repos/Njaya6/Group4_Advanced_Python_Project/commits?per_page=8');
         if (res.ok) {
           const items = await res.json();
           const commits = items.map(c => ({

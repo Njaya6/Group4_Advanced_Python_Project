@@ -125,7 +125,7 @@ We have built a dedicated **GitHub Team Cloud & Direct Commit Platform** directl
 1. Open the platform (`index.html` or `http://localhost:8000`).
 2. Click **`🐙 GitHub Hub`** in the top navigation bar (or inside the **`👥 Team Access`** modal).
 3. **Four Collaboration Options Available:**
-   - **`💻 Web VS Code (github.dev)`**: Opens `https://github.dev/Njaya6/Group6_Advanced_Python_Project-` in the browser. Any teammate can edit every file in full VS Code online, stage changes, commit, and push with zero software installation!
+   - **`💻 Web VS Code (github.dev)`**: Opens `https://github.dev/Njaya6/Group4_Advanced_Python_Project` in the browser. Any teammate can edit every file in full VS Code online, stage changes, commit, and push with zero software installation!
    - **`🚀 In-App Direct Commit & Push`**:
      - Pick a file (`index.html`, `backend/main.py`, `sample_stock_data.csv`, `README.md`, etc.).
      - Edit the code right inside the browser.

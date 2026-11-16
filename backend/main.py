@@ -827,17 +827,17 @@ def get_git_status():
             "clean": len(status_out) == 0,
             "modified_files": [line.strip() for line in status_out.splitlines() if line.strip()],
             "remote": remote_out,
-            "github_repo_url": "https://github.com/Njaya6/Group6_Advanced_Python_Project-",
-            "github_web_editor": "https://github.dev/Njaya6/Group6_Advanced_Python_Project-"
+            "github_repo_url": "https://github.com/Njaya6/Group4_Advanced_Python_Project",
+            "github_web_editor": "https://github.dev/Njaya6/Group4_Advanced_Python_Project"
         }
     except Exception as e:
         return {
             "branch": "main",
             "clean": True,
             "modified_files": [],
-            "remote": "https://github.com/Njaya6/Group6_Advanced_Python_Project-.git",
-            "github_repo_url": "https://github.com/Njaya6/Group6_Advanced_Python_Project-",
-            "github_web_editor": "https://github.dev/Njaya6/Group6_Advanced_Python_Project-",
+            "remote": "https://github.com/Njaya6/Group4_Advanced_Python_Project.git",
+            "github_repo_url": "https://github.com/Njaya6/Group4_Advanced_Python_Project",
+            "github_web_editor": "https://github.dev/Njaya6/Group4_Advanced_Python_Project",
             "error": str(e)
         }
 
@@ -859,7 +859,7 @@ def get_git_log(limit: int = 10):
                     "author": parts[1],
                     "date": parts[2],
                     "message": parts[3],
-                    "url": f"https://github.com/Njaya6/Group6_Advanced_Python_Project-/commit/{parts[0]}"
+                    "url": f"https://github.com/Njaya6/Group4_Advanced_Python_Project/commit/{parts[0]}"
                 })
         return {"commits": commits}
     except Exception as e:
@@ -928,7 +928,7 @@ def git_commit_and_push(payload: GitCommitPayload):
                     "pushed": False,
                     "commit_hash": commit_hash,
                     "message": f"Committed ({commit_hash}) successfully, but push failed: {push_res.stderr.strip()}",
-                    "commit_url": f"https://github.com/Njaya6/Group6_Advanced_Python_Project-/commit/{commit_hash}"
+                    "commit_url": f"https://github.com/Njaya6/Group4_Advanced_Python_Project/commit/{commit_hash}"
                 }
             push_output = push_res.stdout.strip() or push_res.stderr.strip()
             pushed = True
@@ -940,7 +940,7 @@ def git_commit_and_push(payload: GitCommitPayload):
             "commit_hash": commit_hash,
             "message": f"Successfully committed & pushed ({commit_hash}) to GitHub main!",
             "author": author,
-            "commit_url": f"https://github.com/Njaya6/Group6_Advanced_Python_Project-/commit/{commit_hash}",
+            "commit_url": f"https://github.com/Njaya6/Group4_Advanced_Python_Project/commit/{commit_hash}",
             "push_output": push_output
         }
     except subprocess.CalledProcessError as e:
